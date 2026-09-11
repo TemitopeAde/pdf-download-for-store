@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "skills": {
+    "replatform": {
+      "source": "./node_modules/@wix/agent-skills",
+      "sourceType": "local",
+      "computedHash": "94951fff481b1ba218560c962d790adf36377c9cda6d9c92781dab21f80ae54f"
+    },
+    "wix-app": {
+      "source": "./node_modules/@wix/agent-skills",
+      "sourceType": "local",
+      "computedHash": "cd9cff4ab140d71440f723c38606180c153bd8192f15f9747b33de8be0f8a77d"
+    },
+    "wix-auth": {
+      "source": "./node_modules/@wix/agent-skills",
+      "sourceType": "local",
+      "computedHash": "bf7376e4c8c35712962a1a5b621adbcf8b7dc8bdbc0a1870e47992e317b6d213"
+    },
+    "wix-base44-connector": {
+      "source": "./node_modules/@wix/agent-skills",
+      "sourceType": "local",
+      "computedHash": "1b95ebc2d624bcdf59f46681f94d3b1493e6df9a972c1a95b798cd4a6d2e5a21"
+    },
+    "wix-design-system": {
+      "source": "./node_modules/@wix/agent-skills",
+      "sourceType": "local",
+      "computedHash": "47da8b5791959362c730a630c9893473a7e7fa645bbe93b63b306df2ddccbbaf"
+    },
+    "wix-docs": {
+      "source": "./node_modules/@wix/agent-skills",
+      "sourceType": "local",
+      "computedHash": "8f20a8f9ec5efef8c926590f9a06251da0945c731ee56beff811fadb48b5f207"
+    },
+    "wix-headless": {
+      "source": "./node_modules/@wix/agent-skills",
+      "sourceType": "local",
+      "computedHash": "d3c76461355ade5d86b9f44878991f432afa69c6b9122274bf1148855f5b689e"
+    },
+    "wix-headless-fast": {
+      "source": "./node_modules/@wix/agent-skills",
+      "sourceType": "local",
+      "computedHash": "d8beef5a167ce31488823c56cd6703668bb415afa1e84f244a7ad64106a662b6"
+    },
+    "wix-manage": {
+      "source": "./node_modules/@wix/agent-skills",
+      "sourceType": "local",
+      "computedHash": "46be156798177182a8d661d51cea7beeebd064416549729b3dc13ae273a043e9"
+    },
+    "wix-vibe-headless": {
+      "source": "./node_modules/@wix/agent-skills",
+      "sourceType": "local",
+      "computedHash": "e38f47adb14d73cbe9806541a6b9241b0ceda3a2fc4833e1cad9cf463850f01b"
+    }
+  }
+}
