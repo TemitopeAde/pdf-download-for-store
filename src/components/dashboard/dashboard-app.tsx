@@ -7,6 +7,7 @@ import { SettingsPage } from './settings-page';
 import { DashboardShell } from './shell';
 import type { PageKind } from './types';
 import '@/styles/globals.css';
+import { LocaleProvider } from '@/lib/i18n';
 
 export function DashboardApp({ initialPage }: { initialPage: PageKind }) {
   const [page, setPage] = useState(initialPage);
@@ -17,5 +18,5 @@ export function DashboardApp({ initialPage }: { initialPage: PageKind }) {
     if (page === 'pricing') return <PricingPage />;
     return <ProductsPage onOpenFiles={() => setPage('files')} />;
   }, [page]);
-  return <DashboardShell page={page} onNavigate={setPage}>{content}</DashboardShell>;
+  return <LocaleProvider><DashboardShell page={page} onNavigate={setPage}>{content}</DashboardShell></LocaleProvider>;
 }

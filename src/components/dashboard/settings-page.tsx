@@ -8,26 +8,29 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import { dashboardRequest } from '@/lib/dashboard-api';
 import { DEFAULT_SETTINGS } from '@/lib/types';
-import type { AppSettings, StorageProvider, WidgetLayout } from '@/lib/types';
+import type { AppSettings, StorageProvider } from '@/lib/types';
 import { messageFrom } from './format';
 import type { DashboardResponse } from './types';
 import { PageHeader } from './ui-bits';
-import { currentPlan } from '@/lib/plans';
+import { useLocale } from '@/lib/i18n';
 
 export function SettingsPage() {
-  const plan = currentPlan();
+  const { t } = useLocale();
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [secret, setSecret] = useState('');
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     dashboardRequest<DashboardResponse<Partial<AppSettings>>>('/api/settings')
       .then((response) => {
         if (response.data) setSettings((current) => ({ ...current, ...response.data }));
       })
-      .catch((reason: unknown) => toast.error(messageFrom(reason, 'Unable to load settings')));
+      .catch((reason: unknown) => toast.error(t(messageFrom(reason, 'Unable to load settings'))))
+      .finally(() => setLoading(false));
   }, []);
 
   const update = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
@@ -39,37 +42,49 @@ export function SettingsPage() {
     try {
       await dashboardRequest('/api/settings', { method: 'POST', body: JSON.stringify({ ...settings, ...(secret ? { apiSecret: secret } : {}) }) });
       setSecret('');
-      toast.success('Settings saved');
+      toast.success(t('Settings saved'));
     } catch (reason) {
-      toast.error(messageFrom(reason, 'Unable to save settings'));
+      toast.error(t(messageFrom(reason, 'Unable to save settings')));
     } finally {
       setSaving(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6" aria-busy="true" aria-live="polite">
+        <Toaster />
+        <PageHeader title={t('Settings')} description={t('Choose where files live, who can download them, and the defaults for new product-page widgets.')} />
+        <Card>
+          <CardHeader><Skeleton className="h-5 w-32" /><Skeleton className="h-4 w-80 max-w-full" /></CardHeader>
+          <CardContent className="space-y-5"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Toaster />
       <PageHeader
-        title="Settings"
-        description="Choose where files live, who can download them, and the defaults for new product-page widgets."
-        actions={<Button type="button" disabled={saving} onClick={() => void save()}>{saving ? 'Saving…' : 'Save settings'}</Button>}
+        title={t('Settings')}
+        description={t('Choose where files live, who can download them, and the defaults for new product-page widgets.')}
+        actions={<Button type="button" disabled={saving} onClick={() => void save()}>{saving ? t('Saving…') : t('Save settings')}</Button>}
       />
       <Tabs defaultValue="storage" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="storage">Storage</TabsTrigger>
-          <TabsTrigger value="access">Access rules</TabsTrigger>
-          <TabsTrigger value="widget">Widget defaults</TabsTrigger>
+          <TabsTrigger value="storage">{t('Storage')}</TabsTrigger>
+          <TabsTrigger value="access">{t('Access rules')}</TabsTrigger>
         </TabsList>
         <TabsContent value="storage">
           <Card>
             <CardHeader>
-              <CardTitle>File storage</CardTitle>
-              <CardDescription>Wix Media Manager is the default. Cloudinary credentials stay server-side.</CardDescription>
+              <CardTitle>{t('File storage')}</CardTitle>
+              <CardDescription>{t('Wix Media Manager is the default. Cloudinary credentials stay server-side.')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
-                <Label>Storage provider</Label>
+                <Label>{t('Storage provider')}</Label>
                 <Select value={settings.storageProvider} onValueChange={(value) => update('storageProvider', value as StorageProvider)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -80,13 +95,13 @@ export function SettingsPage() {
               </div>
               {settings.storageProvider === 'CLOUDINARY' ? (
                 <div className="grid gap-4 md:grid-cols-2">
-                  <Field id="cloud-name" label="Cloud name" value={settings.cloudName ?? ''} onChange={(value) => update('cloudName', value)} />
-                  <Field id="api-key" label="API key" value={settings.apiKey ?? ''} onChange={(value) => update('apiKey', value)} />
+                  <Field id="cloud-name" label={t('Cloud name')} value={settings.cloudName ?? ''} onChange={(value) => update('cloudName', value)} />
+                  <Field id="api-key" label={t('API key')} value={settings.apiKey ?? ''} onChange={(value) => update('apiKey', value)} />
                   <div className="space-y-2">
-                    <Label htmlFor="api-secret">API secret</Label>
-                    <Input id="api-secret" type="password" value={secret} placeholder="Leave blank to keep the saved secret" onChange={(event) => setSecret(event.target.value)} />
+                    <Label htmlFor="api-secret">{t('API secret')}</Label>
+                    <Input id="api-secret" type="password" value={secret} placeholder={t('Leave blank to keep the saved secret')} onChange={(event) => setSecret(event.target.value)} />
                   </div>
-                  <Field id="upload-preset" label="Signed upload preset (optional)" value={settings.uploadPreset ?? ''} onChange={(value) => update('uploadPreset', value)} />
+                  <Field id="upload-preset" label={t('Signed upload preset (optional)')} value={settings.uploadPreset ?? ''} onChange={(value) => update('uploadPreset', value)} />
                 </div>
               ) : null}
             </CardContent>
@@ -95,68 +110,29 @@ export function SettingsPage() {
         <TabsContent value="access">
           <Card>
             <CardHeader>
-              <CardTitle>Country gating</CardTitle>
-              <CardDescription>Country is resolved server-side from the visitor IP.</CardDescription>
+              <CardTitle>{t('Country gating')}</CardTitle>
+              <CardDescription>{t('Country is resolved server-side from the visitor IP.')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
-                <Label>Rule</Label>
+                <Label>{t('Rule')}</Label>
                 <Select value={settings.countryGateMode} onValueChange={(value) => update('countryGateMode', value as AppSettings['countryGateMode'])}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="OFF">Allow every country</SelectItem>
-                    <SelectItem value="ALLOW">Allow only these countries</SelectItem>
-                    <SelectItem value="BLOCK">Block these countries</SelectItem>
+                    <SelectItem value="OFF">{t('Allow every country')}</SelectItem>
+                    <SelectItem value="ALLOW">{t('Allow only these countries')}</SelectItem>
+                    <SelectItem value="BLOCK">{t('Block these countries')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               {settings.countryGateMode !== 'OFF' ? (
                 <div className="space-y-2">
-                  <Label htmlFor="countries">Country codes</Label>
-                  <Input id="countries" value={settings.countryCodes.join(', ')} placeholder="US, GB, NG" onChange={(event) => update('countryCodes', event.target.value.split(',').map((code) => code.trim().toUpperCase()).filter(Boolean))} />
-                  <p className="text-xs text-muted-foreground">Use ISO 3166-1 alpha-2 codes separated by commas.</p>
+                  <Label htmlFor="countries">{t('Country codes')}</Label>
+                  <Input id="countries" value={settings.countryCodes.join(', ')} placeholder={t('For example: {{codes}}', { codes: 'US, GB, NG' })} onChange={(event) => update('countryCodes', event.target.value.split(',').map((code) => code.trim().toUpperCase()).filter(Boolean))} />
+                  <p className="text-xs text-muted-foreground">{t('Use ISO 3166-1 alpha-2 codes separated by commas.')}</p>
                 </div>
               ) : null}
-              <ToggleRow label="Allow when lookup fails" hint="Prevents a geolocation outage from blocking downloads." checked={settings.countryGateFailOpen} onCheckedChange={(value) => update('countryGateFailOpen', value)} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="widget">
-          <Card>
-            <CardHeader>
-              <CardTitle>Widget defaults</CardTitle>
-              <CardDescription>Used by new product-page plugin instances and as fallbacks when a widget does not override them.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-              <Field id="title" label="Section title" value={settings.title} onChange={(value) => update('title', value)} />
-              <Field id="button" label="Download button" value={settings.buttonText} onChange={(value) => update('buttonText', value)} />
-              <Field id="view-button" label="View button" value={settings.viewButtonText} onChange={(value) => update('viewButtonText', value)} />
-              <div className="space-y-2">
-                <Label>Default layout</Label>
-                <Select value={settings.layout} onValueChange={(value) => update('layout', value as WidgetLayout)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {(['LIST', 'BUTTONS', 'CARDS', 'ACCORDION'] as const).map((layout) => <SelectItem key={layout} value={layout}>{layout}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Default sort</Label>
-                <Select value={settings.defaultSort} onValueChange={(value) => update('defaultSort', value as AppSettings['defaultSort'])}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="MANUAL">Manual</SelectItem>
-                    <SelectItem value="NAME">Name</SelectItem>
-                    <SelectItem value="TYPE">Type</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <ToggleRow label="Show file size" checked={settings.showFileSize} onCheckedChange={(value) => update('showFileSize', value)} />
-              <ToggleRow label="Show file type" checked={settings.showFileType} onCheckedChange={(value) => update('showFileType', value)} />
-              <ToggleRow label="Show description" checked={settings.showDescription} onCheckedChange={(value) => update('showDescription', value)} />
-              <ToggleRow label="Open in a new tab" checked={settings.openInNewTab} onCheckedChange={(value) => update('openInNewTab', value)} />
-              <ToggleRow label="Show view button" checked={settings.showViewButton} onCheckedChange={(value) => update('showViewButton', value)} />
-              <ToggleRow label="Analytics enabled" hint={plan.allowsAnalytics ? 'Records downloads for the Analytics page.' : 'Available on the Pro plan and higher.'} checked={plan.allowsAnalytics && settings.analyticsEnabled} disabled={!plan.allowsAnalytics} onCheckedChange={(value) => update('analyticsEnabled', value)} />
+              <ToggleRow label={t('Allow when lookup fails')} hint={t('Prevents a geolocation outage from blocking downloads.')} checked={settings.countryGateFailOpen} onCheckedChange={(value) => update('countryGateFailOpen', value)} />
             </CardContent>
           </Card>
         </TabsContent>

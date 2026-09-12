@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PageHeader } from './ui-bits';
 import { createUpgradeUrl, CURRENT_PLAN } from '@/lib/plans';
+import { useLocale } from '@/lib/i18n';
 
 const plans = [
   { name: 'Basic', price: 'Free', description: 'A limited way to get started', featured: false },
@@ -22,21 +23,22 @@ const features = [
 ] as const;
 
 export function PricingPage() {
+  const { t } = useLocale();
   return (
     <div className="space-y-6">
-      <PageHeader title="Pricing plans" description="Choose the plan that fits your store. Billing and checkout will be connected later." />
+      <PageHeader title={t('Pricing plans')} description={t('Choose the plan that fits your store. Billing and checkout will be connected later.')} />
       <div className="grid gap-4 md:grid-cols-3">
         {plans.map((plan) => (
           <Card key={plan.name} className={plan.featured ? 'border-primary shadow-md' : undefined}>
             <CardHeader>
               <div className="flex items-center justify-between gap-3">
                 <CardTitle>{plan.name}</CardTitle>
-                {plan.featured ? <Badge>Most popular</Badge> : null}
+                {plan.featured ? <Badge>{t('Most popular')}</Badge> : null}
               </div>
-              <CardDescription>{plan.description}</CardDescription>
-              <p className="pt-3 text-3xl font-semibold">{plan.price}{plan.price !== 'Free' ? <span className="text-sm font-normal text-muted-foreground"> / month</span> : null}</p>
+              <CardDescription>{t(plan.description)}</CardDescription>
+              <p className="pt-3 text-3xl font-semibold">{plan.price === 'Free' ? t('Free') : plan.price}{plan.price !== 'Free' ? <span className="text-sm font-normal text-muted-foreground">{' '}{t('/ month')}</span> : null}</p>
               <div className="pt-4">
-                {plan.name === CURRENT_PLAN ? <Badge variant="secondary">Current plan</Badge> : <Button asChild variant={plan.featured ? 'default' : 'outline'} className="w-full"><a href={createUpgradeUrl()} target="_blank" rel="noreferrer">Upgrade to {plan.name}</a></Button>}
+                {plan.name === CURRENT_PLAN ? <Badge variant="secondary">{t('Current plan')}</Badge> : <Button asChild variant={plan.featured ? 'default' : 'outline'} className="w-full"><a href={createUpgradeUrl()} target="_blank" rel="noreferrer">{t('Upgrade to {{name}}', { name: plan.name })}</a></Button>}
               </div>
             </CardHeader>
           </Card>
@@ -44,25 +46,25 @@ export function PricingPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Plan comparison</CardTitle>
-          <CardDescription>Feature availability by plan.</CardDescription>
+          <CardTitle>{t('Plan comparison')}</CardTitle>
+          <CardDescription>{t('Feature availability by plan.')}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-48">Feature</TableHead>
+                  <TableHead className="min-w-48">{t('Feature')}</TableHead>
                   {plans.map((plan) => <TableHead key={plan.name} className="min-w-32">{plan.name}</TableHead>)}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {features.map((feature) => (
                   <TableRow key={feature.name}>
-                    <TableCell className="font-medium">{feature.name}</TableCell>
+                    <TableCell className="font-medium">{t(feature.name)}</TableCell>
                     {feature.values.map((value, index) => (
                       <TableCell key={`${feature.name}-${plans[index].name}`} className="text-muted-foreground">
-                        {typeof value === 'boolean' ? value ? <Check className="size-4 text-emerald-600" aria-label="Included" /> : <span aria-label="Not included">—</span> : value}
+                        {typeof value === 'boolean' ? value ? <Check className="size-4 text-emerald-600" aria-label={t('Included')} /> : <span aria-label={t('Not included')}>—</span> : t(value)}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -72,7 +74,7 @@ export function PricingPage() {
           </div>
         </CardContent>
       </Card>
-      <p className="flex items-center gap-2 text-xs text-muted-foreground"><CreditCard className="size-3.5" aria-hidden="true" />You are currently on the {CURRENT_PLAN} plan. Billing and checkout will be connected later.</p>
+      <p className="flex items-center gap-2 text-xs text-muted-foreground"><CreditCard className="size-3.5" aria-hidden="true" />{t('You are currently on the {{name}} plan. Billing and checkout will be connected later.', { name: CURRENT_PLAN })}</p>
     </div>
   );
 }

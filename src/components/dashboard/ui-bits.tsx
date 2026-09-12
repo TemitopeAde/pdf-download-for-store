@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLocale } from '@/lib/i18n';
 
 export function PageHeader({ title, description, actions }: { title: string; description: string; actions?: React.ReactNode }) {
   return (
@@ -54,10 +55,11 @@ export function EmptyState({ title, description, action }: { title: string; desc
 }
 
 export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useLocale();
   return (
     <div role="alert" className="flex flex-col gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="flex items-center gap-2 text-sm text-destructive"><AlertCircle className="size-4 shrink-0" aria-hidden="true" />{message}</p>
-      {onRetry ? <Button type="button" variant="outline" size="sm" onClick={onRetry}>Try again</Button> : null}
+      <p className="flex items-center gap-2 text-sm text-destructive"><AlertCircle className="size-4 shrink-0" aria-hidden="true" />{t(message)}</p>
+      {onRetry ? <Button type="button" variant="outline" size="sm" onClick={onRetry}>{t('tryAgain')}</Button> : null}
     </div>
   );
 }

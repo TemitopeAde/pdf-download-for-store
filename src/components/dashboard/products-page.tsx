@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowUpRight, CircleCheck, FileClock, Package, Search, Upload } from 'lucide-react';
+import { ArrowUpRight, CircleCheck, FileClock, Package, Search, Upload, XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { dashboardRequest } from '@/lib/dashboard-api';
@@ -15,10 +15,12 @@ import type { AssignedProductFile, DashboardResponse, LibraryFile, ProductListDa
 import { EmptyState, ErrorBanner, PageHeader, StatCard, StatusBadge, TableSkeleton } from './ui-bits';
 import { GlobalAssignmentCard } from './global-assignment-card';
 import { currentPlan } from '@/lib/plans';
+import { useLocale } from '@/lib/i18n';
 
 type FileFilter = 'all' | 'with' | 'without';
 
 export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
+  const { t } = useLocale();
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
   const [sort, setSort] = useState('name-asc');
@@ -85,8 +87,8 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
   if (!loading && catalogVersion === 'STORES_NOT_INSTALLED') {
     return (
       <div className="space-y-6">
-        <PageHeader title="Products" description="Assign downloadable files to Wix Store products." />
-        <EmptyState title="Wix Stores is not installed" description="Install Wix Stores on this site to attach PDFs, ZIPs, and guides to products." />
+        <PageHeader title={t('products')} description={t('productsDescription')} />
+        <EmptyState title={t("Wix Stores is not installed")} description={t("Install Wix Stores on this site to attach PDFs, ZIPs, and guides to products.")} />
       </div>
     );
   }
@@ -94,57 +96,57 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Products"
-        description="Give every product the files it needs. Manage guides, manuals, and downloads in one place."
-        actions={<Button type="button" onClick={onOpenFiles}><Upload className="size-4" aria-hidden="true" />Upload files</Button>}
+        title={t('products')}
+        description={t('productsDescription')}
+        actions={<Button type="button" onClick={onOpenFiles}><Upload className="size-4" aria-hidden="true" />{t('uploadFiles')}</Button>}
       />
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Products in this view" value={loading && !products.length ? '—' : products.length} hint="Products on this page" icon={Package} />
-        <StatCard label="With downloads" value={loading && !products.length ? '—' : withFiles} hint="Products on this page with assigned files" icon={CircleCheck} tone="success" />
-        <StatCard label="Without downloads" value={loading && !products.length ? '—' : products.length - withFiles} hint="Products on this page with no files attached" icon={FileClock} tone="warning" />
+        <StatCard label={t("Products in this view")} value={loading && !products.length ? '—' : products.length} hint={t("Products on this page")} icon={Package} />
+        <StatCard label={t("With downloads")} value={loading && !products.length ? '—' : withFiles} hint={t("Products on this page with assigned files")} icon={CircleCheck} tone="success" />
+        <StatCard label={t("Without downloads")} value={loading && !products.length ? '—' : products.length - withFiles} hint={t("Products on this page with no files attached")} icon={FileClock} tone="warning" />
       </div>
       <GlobalAssignmentCard onSaved={() => load(page)} />
-      <section aria-label="Product catalog" className="overflow-hidden rounded-xl border bg-white shadow-[0_2px_8px_0_#182b3a03]">
+      <section aria-label={t("Product catalog")} className="overflow-hidden rounded-xl border bg-white shadow-[0_2px_8px_0_#182b3a03]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-5">
-          <div><h2 className="text-sm font-semibold">Product catalog</h2><p className="mt-1 text-xs text-muted-foreground">Select a product to manage its downloadable files.</p></div>
-          <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">{visible.length} shown</span>
+          <div><h2 className="text-sm font-semibold">{t("Product catalog")}</h2><p className="mt-1 text-xs text-muted-foreground">{t("Select a product to manage its downloadable files.")}</p></div>
+          <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">{t('Shown: {{count}}', { count: visible.length })}</span>
         </div>
         <div className="flex flex-col gap-3 border-b bg-[#fcfdfd] p-4 sm:flex-row">
           <div className="relative flex-1 sm:max-w-sm">
             <Search className="pointer-events-none absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
-            <Input className="bg-white pl-8" aria-label="Search products" placeholder="Search by product name…" value={search} onChange={(event) => setSearch(event.target.value)} />
+            <Input className="bg-white pl-8" aria-label={t("Search products")} placeholder={t("Search by product name…")} value={search} onChange={(event) => setSearch(event.target.value)} />
           </div>
           <Select value={sort} onValueChange={setSort}>
-            <SelectTrigger aria-label="Sort products" className="w-full bg-white sm:w-40"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label={t("Sort products")} className="w-full bg-white sm:w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="name-asc">Name: A–Z</SelectItem>
-              <SelectItem value="name-desc">Name: Z–A</SelectItem>
+              <SelectItem value="name-asc">{t("Name: A–Z")}</SelectItem>
+              <SelectItem value="name-desc">{t("Name: Z–A")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filter} onValueChange={(value) => setFilter(value as FileFilter)}>
-            <SelectTrigger aria-label="Filter this page by file status" className="w-full bg-white sm:ml-auto sm:w-44"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label={t("Filter this page by file status")} className="w-full bg-white sm:ml-auto sm:w-44"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All on this page</SelectItem>
-              <SelectItem value="with">Has files (page)</SelectItem>
-              <SelectItem value="without">Missing files (page)</SelectItem>
+              <SelectItem value="all">{t("All on this page")}</SelectItem>
+              <SelectItem value="with">{t("Has files (page)")}</SelectItem>
+              <SelectItem value="without">{t("Missing files (page)")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        {error ? <ErrorBanner message={error} onRetry={() => void load(page)} /> : null}
+        {error ? <ErrorBanner message={t(error)} onRetry={() => void load(page)} /> : null}
         {loading && products.length === 0 ? <TableSkeleton /> : visible.length === 0 ? (
           <EmptyState
-            title={debounced || filter !== 'all' ? 'No matching products' : 'No products yet'}
-            description={debounced || filter !== 'all' ? 'Try a different search or filter.' : 'Add products in Wix Stores, then assign download files here.'}
+            title={debounced || filter !== 'all' ? t('No matching products') : t('No products yet')}
+            description={debounced || filter !== 'all' ? t('Try a different search or filter.') : t('Add products in Wix Stores, then assign download files here.')}
           />
         ) : (
           <div className="overflow-hidden bg-background">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Files</TableHead>
-                  <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
+                  <TableHead>{t("Product")}</TableHead>
+                  <TableHead>{t("SKU")}</TableHead>
+                  <TableHead>{t("Files")}</TableHead>
+                  <TableHead className="text-right"><span className="sr-only">{t("Actions")}</span></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -159,20 +161,20 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
                     <TableCell className="text-muted-foreground">{product.sku || '—'}</TableCell>
                     <TableCell>
                       <StatusBadge tone={product.assignedFilesCount > 0 ? 'success' : 'warning'}>
-                        {product.assignedFilesCount > 0 ? `${product.assignedFilesCount} file${product.assignedFilesCount === 1 ? '' : 's'}` : 'Needs files'}
+                        {product.assignedFilesCount > 0 ? t('Files: {{count}}', { count: product.assignedFilesCount }) : t('Needs files')}
                       </StatusBadge>
                     </TableCell>
-                    <TableCell className="text-right"><Button type="button" size="sm" variant="ghost" aria-label={`Manage files for ${product.name}`} onClick={(event) => { event.stopPropagation(); setSelected(product); }}>Manage <ArrowUpRight className="size-3.5 text-muted-foreground" aria-hidden="true" /></Button></TableCell>
+                    <TableCell className="text-right"><Button type="button" size="sm" variant="ghost" aria-label={t('Manage files for {{name}}', { name: product.name })} onClick={(event) => { event.stopPropagation(); setSelected(product); }}>{t("Manage")}<ArrowUpRight className="size-3.5 text-muted-foreground" aria-hidden="true" /></Button></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
         )}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-4"><p className="text-xs text-muted-foreground">{loading ? 'Loading products…' : `Page ${page + 1} · ${visible.length} of ${products.length} products shown`}</p>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-4"><p className="text-xs text-muted-foreground">{loading ? t('Loading products…') : t('Page {{page}} · {{shown}} of {{total}} products shown', { page: page + 1, shown: visible.length, total: products.length })}</p>
         <div className="flex gap-2">
-          <Button type="button" variant="outline" disabled={loading || page === 0} onClick={() => void load(page - 1)}>Previous</Button>
-          <Button type="button" variant="outline" disabled={loading || Boolean(error) || !hasNext || (catalogVersion === 'V3_CATALOG' && !cursor)} onClick={() => void load(page + 1)}>Next</Button>
+          <Button type="button" variant="outline" disabled={loading || page === 0} onClick={() => void load(page - 1)}>{t("Previous")}</Button>
+          <Button type="button" variant="outline" disabled={loading || Boolean(error) || !hasNext || (catalogVersion === 'V3_CATALOG' && !cursor)} onClick={() => void load(page + 1)}>{t("Next")}</Button>
         </div>
         </div>
       </section>
@@ -187,6 +189,7 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
 
 function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummary; onClose: () => void; onChanged: (productId: string, count: number) => void }) {
   const plan = currentPlan();
+  const { t } = useLocale();
   const [assigned, setAssigned] = useState<AssignedProductFile[]>([]);
   const [library, setLibrary] = useState<LibraryFile[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -263,14 +266,15 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
 
   return (
     <Sheet open={Boolean(product)} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <SheetContent className="sm:max-w-lg">
+      <SheetContent className="sm:max-w-lg" showCloseButton={false}>
+        <SheetClose asChild><Button type="button" variant="ghost" size="icon-sm" className="absolute top-3 right-3" aria-label={t('Close')}><XIcon aria-hidden="true" /></Button></SheetClose>
         <SheetHeader>
-          <SheetTitle>{product?.name ?? 'Product'}</SheetTitle>
-          <SheetDescription>Assign library files and control who can download them.</SheetDescription>
+          <SheetTitle>{product?.name ?? t('Product')}</SheetTitle>
+          <SheetDescription>{t("Assign library files and control who can download them.")}</SheetDescription>
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6">
-          {error ? <ErrorBanner message={error} /> : null}
-          {loading ? <div className="space-y-3" aria-busy="true" aria-label="Loading product files">
+          {error ? <ErrorBanner message={t(error)} /> : null}
+          {loading ? <div className="space-y-3" aria-busy="true" aria-label={t("Loading product files")}>
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-5 w-40" />
             <Skeleton className="h-20 w-full rounded-lg" />
@@ -283,19 +287,19 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
             aria-expanded={showAvailable}
             onClick={() => setShowAvailable((current) => !current)}
           >
-            {showAvailable ? 'Hide available files' : 'Assign more files'}
+            {showAvailable ? t('Hide available files') : t('Assign more files')}
           </Button>
           {showAvailable ? <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <Label>Add files</Label>
+              <Label>{t("Add files")}</Label>
               {available.length > 0 ? (
                 <Button type="button" size="sm" disabled={busy || selectedIds.length === 0} onClick={() => void assign(selectedIds)}>
-                  Assign {selectedIds.length > 0 ? `${selectedIds.length} selected` : 'selected'}
+                  {t('Assign selected: {{count}}', { count: selectedIds.length })}
                 </Button>
               ) : null}
             </div>
             {available.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{library.length === 0 ? 'Upload files on the Files page, then assign them here.' : 'Every library file is already assigned to this product.'}</p>
+              <p className="text-sm text-muted-foreground">{library.length === 0 ? t('Upload files on the Files page, then assign them here.') : t('Every library file is already assigned to this product.')}</p>
             ) : (
               <ul className="space-y-2">
                 {available.map((file) => {
@@ -307,35 +311,35 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
                       <Checkbox
                         checked={checked}
                         onCheckedChange={(value) => setSelectedIds((current) => value === true ? [...current, id] : current.filter((item) => item !== id))}
-                        aria-label={`Select ${file.name}`}
+                        aria-label={t('Select {{name}}', { name: file.name })}
                       />
                       <span className="min-w-0 flex-1 truncate text-sm font-medium">{file.name}</span>
-                      <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => void assign([id])}>Assign</Button>
+                      <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => void assign([id])}>{t('assign')}</Button>
                     </li>
                   );
                 })}
               </ul>
             )}
           </div> : null}
-          {assigned.length === 0 ? <EmptyState title="No files on this product" description="Assign one or more files from the library. Every assigned file appears on the product page widget." /> : (
+          {assigned.length === 0 ? <EmptyState title={t("No files on this product")} description={t("Assign one or more files from the library. Every assigned file appears on the product page widget.")} /> : (
             <div className="space-y-3">
-              <p className="text-sm font-medium">{assigned.length} file{assigned.length === 1 ? '' : 's'} on this product</p>
+              <p className="text-sm font-medium">{t('Files on this product: {{count}}', { count: assigned.length })}</p>
               {assigned.map((entry) => (
             <div key={`${entry.fileId}-${entry.assignmentId ?? 'rule'}`} className="space-y-3 rounded-lg border p-3">
               <div>
                 <p className="font-medium">{entry.label || entry.name}</p>
-                <p className="text-xs text-muted-foreground">{entry.fileType} · {entry.assignmentId ? 'Direct assignment' : 'Assigned by rule'}</p>
+                <p className="text-xs text-muted-foreground">{entry.fileType} · {entry.assignmentId ? t('Direct assignment') : t('Assigned by rule')}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Select value={entry.visibility ?? 'PUBLIC'} onValueChange={(value) => void updateVisibility(entry, value as Visibility)}>
-                  <SelectTrigger disabled={!plan.allowsAdvancedAccess} className="w-44"><SelectValue /></SelectTrigger>
+                  <SelectTrigger aria-label={t('Access for {{name}}', { name: entry.label || entry.name })} disabled={!plan.allowsAdvancedAccess} className="w-44"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PUBLIC">Anyone</SelectItem>
-                    <SelectItem value="MEMBERS_ONLY">Members only</SelectItem>
-                    <SelectItem value="PURCHASE_REQUIRED">Purchase required</SelectItem>
+                    <SelectItem value="PUBLIC">{t("Anyone")}</SelectItem>
+                    <SelectItem value="MEMBERS_ONLY">{t("Members only")}</SelectItem>
+                    <SelectItem value="PURCHASE_REQUIRED">{t("Purchase required")}</SelectItem>
                   </SelectContent>
                 </Select>
-                {entry.assignmentId ? <Button type="button" variant="destructive" size="sm" disabled={busy} onClick={() => void remove(entry)}>Remove</Button> : null}
+                {entry.assignmentId ? <Button type="button" variant="destructive" size="sm" disabled={busy} onClick={() => void remove(entry)}>{t('remove')}</Button> : null}
               </div>
             </div>
               ))}
