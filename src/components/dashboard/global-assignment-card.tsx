@@ -17,7 +17,7 @@ type Access = 'PUBLIC' | 'MEMBERS_ONLY' | 'PURCHASE_REQUIRED';
 interface GlobalRule { _id?: string; fileId: string; label?: string; visibility?: Access; }
 interface FileDraft { label: string; visibility: Access; }
 
-export function GlobalAssignmentCard() {
+export function GlobalAssignmentCard({ onSaved }: { onSaved?: () => void | Promise<void> }) {
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<LibraryFile[]>([]);
   const [rules, setRules] = useState<GlobalRule[]>([]);
@@ -58,6 +58,7 @@ export function GlobalAssignmentCard() {
     try {
       await dashboardRequest('/api/assignment-rules', { method: 'POST', body: JSON.stringify({ assignments: selected.map((fileId) => ({ fileId, label: drafts[fileId]?.label ?? '', visibility: drafts[fileId]?.visibility ?? 'PUBLIC' })) }) });
       await load();
+      await onSaved?.();
       setOpen(false);
     } catch (reason) {
       setError(messageFrom(reason, 'Unable to assign files to all products'));

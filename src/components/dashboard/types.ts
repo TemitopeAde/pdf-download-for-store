@@ -1,6 +1,6 @@
 import type { AnalyticsSummary, AppSettings, DownloadFile, ProductSummary, Visibility } from '@/lib/types';
 
-export type PageKind = 'products' | 'files' | 'analytics' | 'settings';
+export type PageKind = 'products' | 'files' | 'analytics' | 'pricing' | 'settings';
 
 export interface DashboardResponse<T> {
   success: boolean;

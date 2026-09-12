@@ -74,9 +74,28 @@ function fontValueFromAttribute(value: string | null): FontSetting {
   return { font: value, textDecoration: '' };
 }
 
+function renderFormatIcon(file: ProductDownload): string {
+  const type = file.fileType.toLowerCase().split(';')[0]?.trim() || '';
+  const extension = file.name.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1] || '';
+  const formats = [
+    { extensions: ['xls', 'xlsx', 'xlsm', 'xlsb', 'csv', 'ods'], types: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel.sheet.macroenabled.12', 'application/vnd.ms-excel.sheet.binary.macroenabled.12', 'text/csv', 'application/vnd.oasis.opendocument.spreadsheet'], label: 'XLS', color: '#167447' },
+    { extensions: ['doc', 'docx', 'docm', 'odt', 'rtf'], types: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-word.document.macroenabled.12', 'application/vnd.oasis.opendocument.text', 'application/rtf', 'text/rtf'], label: 'DOC', color: '#2563eb' },
+    { extensions: ['pdf'], types: ['application/pdf'], label: 'PDF', color: '#b91c1c' },
+    { extensions: ['zip', 'rar', '7z', 'gz', 'tar'], types: ['application/zip', 'application/x-zip-compressed', 'application/vnd.rar', 'application/x-rar-compressed', 'application/x-7z-compressed', 'application/gzip', 'application/x-tar'], label: 'ZIP', color: '#7c3aed' },
+    { extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'avif', 'bmp', 'tif', 'tiff', 'ico', 'heic'], types: [], label: 'IMG', color: '#0e7490' },
+  ];
+  const format = formats.find((entry) => entry.types.includes(type))
+    ?? (type.startsWith('image/') ? formats.find((entry) => entry.label === 'IMG') : undefined)
+    ?? formats.find((entry) => entry.extensions.includes(type.replace(/^\./, '')) || entry.extensions.includes(extension));
+  const color = format?.color || '#4b5563';
+  const label = format?.label || 'FILE';
+  return `<svg width="28" height="32" viewBox="0 0 28 32" style="flex-shrink:0" aria-hidden="true" focusable="false"><path d="M4 0h14l10 10v18a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4Z" fill="${color}"/><path d="M18 0v7a3 3 0 0 0 3 3h7Z" fill="#fff" fill-opacity=".3"/><text x="14" y="24" text-anchor="middle" style="font:700 8px Arial,sans-serif;fill:#fff">${label}</text></svg>`;
+}
+
 function renderFile(file: ProductDownload, labelColor: string): string {
   const buttonText = file.label?.trim() || 'Download';
-  return `<button type="button" data-action="download" data-file-id="${escapeHtml(file.fileId)}" style="display:inline-flex;align-items:center;gap:8px;border:0;border-radius:4px;cursor:pointer;color:${sanitizeColor(labelColor)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>${escapeHtml(buttonText)}<span class="product-downloads-button-spinner" aria-hidden="true"></span></button>`;
+  const accessibleLabel = /^download\b/i.test(buttonText) && buttonText !== 'Download' ? buttonText : `Download ${file.label?.trim() || file.name}`;
+  return `<button type="button" data-action="download" data-file-id="${escapeHtml(file.fileId)}" aria-label="${escapeHtml(accessibleLabel)}" style="display:inline-flex;align-items:center;gap:8px;max-width:100%;border:0;border-radius:4px;cursor:pointer;color:${sanitizeColor(labelColor)}">${renderFormatIcon(file)}<span style="min-width:0;overflow-wrap:anywhere;text-align:start">${escapeHtml(buttonText)}</span><svg width="16" height="16" style="margin-left:auto;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg><span class="product-downloads-button-spinner" aria-hidden="true"></span></button>`;
 }
 
 class ProductDownloadsElement extends HTMLElement {

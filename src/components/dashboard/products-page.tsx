@@ -102,7 +102,7 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
         <StatCard label="With downloads" value={loading && !products.length ? '—' : withFiles} hint="Products on this page with assigned files" icon={CircleCheck} tone="success" />
         <StatCard label="Without downloads" value={loading && !products.length ? '—' : products.length - withFiles} hint="Products on this page with no files attached" icon={FileClock} tone="warning" />
       </div>
-      <GlobalAssignmentCard />
+      <GlobalAssignmentCard onSaved={() => load(page)} />
       <section aria-label="Product catalog" className="overflow-hidden rounded-xl border bg-white shadow-[0_2px_8px_0_#182b3a03]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-5">
           <div><h2 className="text-sm font-semibold">Product catalog</h2><p className="mt-1 text-xs text-muted-foreground">Select a product to manage its downloadable files.</p></div>

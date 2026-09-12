@@ -1,4 +1,4 @@
-import { ArrowUpRight, BarChart3, ChevronRight, Download, FileStack, Package, Settings } from 'lucide-react';
+import { ArrowUpRight, BarChart3, ChevronRight, CreditCard, Download, FileStack, Package, Settings } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import type { PageKind } from './types';
@@ -7,6 +7,7 @@ const navigation: Array<{ id: PageKind; label: string; icon: typeof Package }> =
   { id: 'products', label: 'Products', icon: Package },
   { id: 'files', label: 'File library', icon: FileStack },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'pricing', label: 'Pricing plans', icon: CreditCard },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
