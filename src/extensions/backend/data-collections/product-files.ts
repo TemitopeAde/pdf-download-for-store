@@ -24,10 +24,10 @@ export default {
   ],
   displayField: 'productId',
   dataPermissions: {
-    itemInsert: 'CMS_EDITOR',
+    itemInsert: 'PRIVILEGED',
     itemRead: 'ANYONE',
-    itemRemove: 'CMS_EDITOR',
-    itemUpdate: 'CMS_EDITOR',
+    itemRemove: 'PRIVILEGED',
+    itemUpdate: 'PRIVILEGED',
   },
   indexes: [
     { fields: [{ path: 'productId', order: 'ASC' }, { path: 'fileId', order: 'ASC' }], unique: true },

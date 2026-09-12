@@ -1,4 +1,5 @@
 import { items } from '@wix/data';
+import { auth } from '@wix/essentials';
 import type { ApiResult, AssignmentRule, DownloadFile, ProductFile } from './types';
 
 export const COLLECTIONS = {
@@ -93,15 +94,15 @@ export async function getCollectionItem(collectionId: string, id: string): Promi
 }
 
 export async function insertItem(collectionId: string, value: Record<string, unknown>): Promise<DataRecord> {
-  return asRecord(await items.insert(collectionId, value));
+  return asRecord(await auth.elevate(items.insert)(collectionId, value));
 }
 
 export async function updateItem(collectionId: string, value: Record<string, unknown> & { _id: string }): Promise<DataRecord> {
-  return asRecord(await items.update(collectionId, value));
+  return asRecord(await auth.elevate(items.update)(collectionId, value));
 }
 
 export async function removeItem(collectionId: string, id: string): Promise<void> {
-  await items.remove(collectionId, id);
+  await auth.elevate(items.remove)(collectionId, id);
 }
 
 export function ok<T>(data: T): ApiResult<T> {

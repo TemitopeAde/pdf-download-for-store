@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, CircleCheck, FileClock, Package, Search, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,6 +18,10 @@ type FileFilter = 'all' | 'with' | 'without';
 export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
+  const [sort, setSort] = useState('name-asc');
+  const [page, setPage] = useState(0);
+  const pageCursors = useRef<Array<string | undefined>>([undefined]);
+  const requestId = useRef(0);
   const [filter, setFilter] = useState<FileFilter>('all');
   const [products, setProducts] = useState<ProductSummary[]>([]);
   const [catalogVersion, setCatalogVersion] = useState<ProductListData['catalogVersion'] | undefined>();
@@ -31,28 +36,40 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
     return () => window.clearTimeout(timer);
   }, [search]);
 
-  const load = async (append = false, nextCursor?: string) => {
+  const load = async (targetPage = 0) => {
+    const id = ++requestId.current;
     setLoading(true);
+    setProducts([]);
     setError('');
     try {
-      const params = new URLSearchParams({ search: debounced, limit: '40' });
+      const params = new URLSearchParams({ search: debounced, sort, limit: '40', offset: String(targetPage * 40) });
+      const nextCursor = pageCursors.current[targetPage];
       if (nextCursor) params.set('cursor', nextCursor);
-      if (append) params.set('offset', String(products.length));
       const response = await dashboardRequest<DashboardResponse<ProductListData>>(`/api/products?${params.toString()}`);
+      if (id !== requestId.current) return;
       const data = response.data;
       if (!data) throw new Error('Unable to load products');
       setCatalogVersion(data.catalogVersion);
       setHasNext(data.hasNext);
       setCursor(data.nextCursor);
-      setProducts((current) => append ? [...current, ...data.products] : data.products);
+      setPage(targetPage);
+      pageCursors.current[targetPage + 1] = data.nextCursor;
+      setProducts(data.products);
     } catch (reason) {
-      setError(messageFrom(reason, 'Unable to load products'));
+      if (id === requestId.current) setError(messageFrom(reason, 'Unable to load products'));
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
   };
 
-  useEffect(() => { void load(false); }, [debounced]);
+  useEffect(() => {
+    pageCursors.current = [undefined];
+    setPage(0);
+    setHasNext(false);
+    setCursor(undefined);
+    void load(0);
+    return () => { requestId.current += 1; };
+  }, [debounced, sort]);
 
   const visible = useMemo(() => products.filter((product) => {
     if (filter === 'with') return product.assignedFilesCount > 0;
@@ -79,9 +96,9 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
         actions={<Button type="button" onClick={onOpenFiles}><Upload className="size-4" aria-hidden="true" />Upload files</Button>}
       />
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Products in this view" value={loading && !products.length ? '—' : products.length} hint={hasNext ? 'Loaded products · more available' : 'Products matching your search'} icon={Package} />
-        <StatCard label="With downloads" value={loading && !products.length ? '—' : withFiles} hint="Loaded products with assigned files" icon={CircleCheck} tone="success" />
-        <StatCard label="Without downloads" value={loading && !products.length ? '—' : products.length - withFiles} hint="Loaded products with no files attached" icon={FileClock} tone="warning" />
+        <StatCard label="Products in this view" value={loading && !products.length ? '—' : products.length} hint="Products on this page" icon={Package} />
+        <StatCard label="With downloads" value={loading && !products.length ? '—' : withFiles} hint="Products on this page with assigned files" icon={CircleCheck} tone="success" />
+        <StatCard label="Without downloads" value={loading && !products.length ? '—' : products.length - withFiles} hint="Products on this page with no files attached" icon={FileClock} tone="warning" />
       </div>
       <section aria-label="Product catalog" className="overflow-hidden rounded-xl border bg-white shadow-[0_2px_8px_0_#182b3a03]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-5">
@@ -93,16 +110,23 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
             <Search className="pointer-events-none absolute top-2.5 left-2.5 size-4 text-muted-foreground" />
             <Input className="bg-white pl-8" aria-label="Search products" placeholder="Search by product name…" value={search} onChange={(event) => setSearch(event.target.value)} />
           </div>
-          <Select value={filter} onValueChange={(value) => setFilter(value as FileFilter)}>
-            <SelectTrigger aria-label="Filter products by file status" className="w-full bg-white sm:ml-auto sm:w-44"><SelectValue /></SelectTrigger>
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger aria-label="Sort products" className="w-full bg-white sm:w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All products</SelectItem>
-              <SelectItem value="with">Has files</SelectItem>
-              <SelectItem value="without">Missing files</SelectItem>
+              <SelectItem value="name-asc">Name: A–Z</SelectItem>
+              <SelectItem value="name-desc">Name: Z–A</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filter} onValueChange={(value) => setFilter(value as FileFilter)}>
+            <SelectTrigger aria-label="Filter this page by file status" className="w-full bg-white sm:ml-auto sm:w-44"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All on this page</SelectItem>
+              <SelectItem value="with">Has files (page)</SelectItem>
+              <SelectItem value="without">Missing files (page)</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        {error ? <ErrorBanner message={error} onRetry={() => void load(false)} /> : null}
+        {error ? <ErrorBanner message={error} onRetry={() => void load(page)} /> : null}
         {loading && products.length === 0 ? <TableSkeleton /> : visible.length === 0 ? (
           <EmptyState
             title={debounced || filter !== 'all' ? 'No matching products' : 'No products yet'}
@@ -141,8 +165,11 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
             </Table>
           </div>
         )}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-4"><p className="text-xs text-muted-foreground">{loading ? 'Loading products…' : `${visible.length} of ${products.length} loaded products shown`}</p>
-        {hasNext ? <Button type="button" variant="outline" disabled={loading} onClick={() => void load(true, cursor)}>Load more</Button> : null}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-4"><p className="text-xs text-muted-foreground">{loading ? 'Loading products…' : `Page ${page + 1} · ${visible.length} of ${products.length} products shown`}</p>
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" disabled={loading || page === 0} onClick={() => void load(page - 1)}>Previous</Button>
+          <Button type="button" variant="outline" disabled={loading || Boolean(error) || !hasNext || (catalogVersion === 'V3_CATALOG' && !cursor)} onClick={() => void load(page + 1)}>Next</Button>
+        </div>
         </div>
       </section>
       <ProductSheet
@@ -157,7 +184,7 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
 function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummary; onClose: () => void; onChanged: (productId: string, count: number) => void }) {
   const [assigned, setAssigned] = useState<AssignedProductFile[]>([]);
   const [library, setLibrary] = useState<LibraryFile[]>([]);
-  const [fileId, setFileId] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -172,6 +199,7 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
       const nextAssigned = filesResponse.data?.files ?? [];
       setAssigned(nextAssigned);
       setLibrary(libraryResponse.data?.files ?? []);
+      setSelectedIds([]);
       onChanged(current.id, nextAssigned.length);
     } catch (reason) {
       setError(messageFrom(reason, 'Unable to load product files'));
@@ -186,13 +214,12 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
 
   const available = library.filter((file) => file._id && !assigned.some((entry) => entry.fileId === file._id));
 
-  const assign = async () => {
-    if (!product || !fileId) return;
+  const assign = async (fileIds: string[]) => {
+    if (!product || fileIds.length === 0) return;
     setBusy(true);
     setError('');
     try {
-      await dashboardRequest('/api/product-files', { method: 'POST', body: JSON.stringify({ productId: product.id, fileId, visibility: 'PUBLIC' }) });
-      setFileId('');
+      await dashboardRequest('/api/product-files', { method: 'POST', body: JSON.stringify({ productId: product.id, fileIds }) });
       await refresh(product);
     } catch (reason) {
       setError(messageFrom(reason, 'Unable to assign file'));
@@ -204,7 +231,7 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
     if (!product) return;
     setBusy(true);
     try {
-      await dashboardRequest('/api/product-files', { method: 'POST', body: JSON.stringify({ productId: product.id, fileId: entry.fileId, visibility, label: entry.label, description: entry.description, isVisible: entry.isVisible }) });
+      await dashboardRequest('/api/product-files', { method: 'POST', body: JSON.stringify({ productId: product.id, fileId: entry.fileId, visibility, label: entry.label, description: entry.description, isVisible: entry.isVisible, sortOrder: entry.sortOrder }) });
       await refresh(product);
     } catch (reason) {
       setError(messageFrom(reason, 'Unable to update visibility'));
@@ -234,18 +261,41 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6">
           {error ? <ErrorBanner message={error} /> : null}
           <div className="space-y-2">
-            <Label>Add a file</Label>
-            <div className="flex gap-2">
-              <Select value={fileId || undefined} onValueChange={setFileId} disabled={available.length === 0}>
-                <SelectTrigger className="flex-1"><SelectValue placeholder={available.length ? 'Choose a file' : 'Upload files first'} /></SelectTrigger>
-                <SelectContent>
-                  {available.map((file) => file._id ? <SelectItem key={file._id} value={file._id}>{file.name}</SelectItem> : null)}
-                </SelectContent>
-              </Select>
-              <Button type="button" disabled={!fileId || busy} onClick={() => void assign()}>Assign</Button>
+            <div className="flex items-center justify-between gap-2">
+              <Label>Add files</Label>
+              {available.length > 0 ? (
+                <Button type="button" size="sm" disabled={busy || selectedIds.length === 0} onClick={() => void assign(selectedIds)}>
+                  Assign {selectedIds.length > 0 ? `${selectedIds.length} selected` : 'selected'}
+                </Button>
+              ) : null}
             </div>
+            {available.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{library.length === 0 ? 'Upload files on the Files page, then assign them here.' : 'Every library file is already assigned to this product.'}</p>
+            ) : (
+              <ul className="space-y-2">
+                {available.map((file) => {
+                  const id = file._id;
+                  if (!id) return null;
+                  const checked = selectedIds.includes(id);
+                  return (
+                    <li key={id} className="flex items-center gap-2 rounded-lg border p-2">
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(value) => setSelectedIds((current) => value === true ? [...current, id] : current.filter((item) => item !== id))}
+                        aria-label={`Select ${file.name}`}
+                      />
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium">{file.name}</span>
+                      <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => void assign([id])}>Assign</Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
-          {assigned.length === 0 ? <EmptyState title="No files on this product" description="Choose a file from the library to make it downloadable on the product page." /> : assigned.map((entry) => (
+          {assigned.length === 0 ? <EmptyState title="No files on this product" description="Assign one or more files from the library. Every assigned file appears on the product page widget." /> : (
+            <div className="space-y-3">
+              <p className="text-sm font-medium">{assigned.length} file{assigned.length === 1 ? '' : 's'} on this product</p>
+              {assigned.map((entry) => (
             <div key={`${entry.fileId}-${entry.assignmentId ?? 'rule'}`} className="space-y-3 rounded-lg border p-3">
               <div>
                 <p className="font-medium">{entry.label || entry.name}</p>
@@ -263,7 +313,9 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
                 {entry.assignmentId ? <Button type="button" variant="destructive" size="sm" disabled={busy} onClick={() => void remove(entry)}>Remove</Button> : null}
               </div>
             </div>
-          ))}
+              ))}
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

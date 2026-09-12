@@ -12,7 +12,13 @@ Call them from frontend extensions with `httpClient.fetchWithAuth()` from
 
 export const GET: APIRoute = async ({ url }) => {
   try {
-    const result = await listProducts(url.searchParams.get('search') ?? '', Number(url.searchParams.get('limit') ?? 20), Number(url.searchParams.get('offset') ?? 0), url.searchParams.get('cursor') ?? undefined);
+    const limit = Number(url.searchParams.get('limit') ?? 40);
+    const offset = Number(url.searchParams.get('offset') ?? 0);
+    const sort = url.searchParams.get('sort') ?? 'name-asc';
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isSafeInteger(offset) || offset < 0 || (sort !== 'name-asc' && sort !== 'name-desc')) {
+      return json(fail('Invalid product pagination or sort'), 400);
+    }
+    const result = await listProducts(url.searchParams.get('search') ?? '', limit, offset, url.searchParams.get('cursor') ?? undefined, sort);
     return json(ok(result));
   } catch (error) {
     console.error('Unable to retrieve products', error);
@@ -20,6 +26,6 @@ export const GET: APIRoute = async ({ url }) => {
   }
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async () => {
   return json(fail('Product writes are managed by Wix Stores'), 405);
 };

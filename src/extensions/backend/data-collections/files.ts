@@ -29,10 +29,10 @@ export default {
   ],
   displayField: 'name',
   dataPermissions: {
-    itemInsert: 'CMS_EDITOR',
+    itemInsert: 'PRIVILEGED',
     itemRead: 'ANYONE',
-    itemRemove: 'CMS_EDITOR',
-    itemUpdate: 'CMS_EDITOR',
+    itemRemove: 'PRIVILEGED',
+    itemUpdate: 'PRIVILEGED',
   },
   indexes: [
     { fields: [{ path: 'mediaId', order: 'ASC' }], unique: true },

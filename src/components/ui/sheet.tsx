@@ -27,12 +27,13 @@ function SheetPortal({
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
 }
 
-function SheetOverlay({
-  className,
-  ...props
-}: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
+const SheetOverlay = React.forwardRef<
+  React.ElementRef<typeof SheetPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
+>(function SheetOverlay({ className, ...props }, ref) {
   return (
     <SheetPrimitive.Overlay
+      ref={ref}
       data-slot="sheet-overlay"
       className={cn(
         "fixed inset-0 z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
@@ -41,6 +42,10 @@ function SheetOverlay({
       {...props}
     />
   )
+})
+
+function isOutsidePortaledMenu(target: EventTarget | null): boolean {
+  return target instanceof Element && Boolean(target.closest('[data-slot="select-content"], [data-slot="dropdown-menu-content"]'));
 }
 
 function SheetContent({
@@ -48,6 +53,9 @@ function SheetContent({
   children,
   side = "right",
   showCloseButton = true,
+  onPointerDownOutside,
+  onFocusOutside,
+  onInteractOutside,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
@@ -64,6 +72,18 @@ function SheetContent({
           className
         )}
         {...props}
+        onPointerDownOutside={(event) => {
+          if (isOutsidePortaledMenu(event.target)) event.preventDefault();
+          onPointerDownOutside?.(event);
+        }}
+        onFocusOutside={(event) => {
+          if (isOutsidePortaledMenu(event.target)) event.preventDefault();
+          onFocusOutside?.(event);
+        }}
+        onInteractOutside={(event) => {
+          if (isOutsidePortaledMenu(event.target)) event.preventDefault();
+          onInteractOutside?.(event);
+        }}
       >
         {children}
         {showCloseButton && (

@@ -1,9 +1,9 @@
 import { catalogVersioning, products, productsV3 } from '@wix/stores';
-import { COLLECTIONS, queryAll, toProductFile } from './data';
+import { items } from '@wix/data';
+import { COLLECTIONS, toProductFile } from './data';
 import type { ProductSummary } from './types';
 
 type CatalogVersion = 'V1_CATALOG' | 'V3_CATALOG' | 'STORES_NOT_INSTALLED';
-let cachedVersion: CatalogVersion | undefined;
 
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === 'object' && value !== null ? value as Record<string, unknown> : {};
@@ -36,34 +36,49 @@ function mapProduct(value: unknown): ProductSummary {
 }
 
 async function withAssignmentCounts(productsList: ProductSummary[]): Promise<ProductSummary[]> {
-  const assignments = await queryAll(COLLECTIONS.productFiles);
+  if (!productsList.length) return [];
+  let page = await items.query(COLLECTIONS.productFiles)
+    .hasSome('productId', productsList.map((product) => product.id)).limit(100).find();
   const counts = new Map<string, number>();
-  assignments.map(toProductFile).forEach((assignment) => counts.set(assignment.productId, (counts.get(assignment.productId) ?? 0) + 1));
+  for (;;) {
+    page.items.map(toProductFile).forEach((assignment) => counts.set(assignment.productId, (counts.get(assignment.productId) ?? 0) + 1));
+    if (!page.hasNext()) break;
+    page = await page.next();
+  }
   return productsList.map((product) => ({ ...product, assignedFilesCount: counts.get(product.id) ?? 0 }));
 }
 
 export async function getCatalogVersion(): Promise<CatalogVersion> {
-  if (cachedVersion) return cachedVersion;
   const response = await catalogVersioning.getCatalogVersion();
   const version = stringValue(asRecord(response).catalogVersion);
-  cachedVersion = version === 'V1_CATALOG' || version === 'V3_CATALOG' ? version : 'STORES_NOT_INSTALLED';
-  return cachedVersion;
+  return version === 'V1_CATALOG' || version === 'V3_CATALOG' ? version : 'STORES_NOT_INSTALLED';
 }
 
-export async function listProducts(search: string, limit: number, offset: number, cursor?: string): Promise<{ products: ProductSummary[]; nextCursor?: string; hasNext: boolean; catalogVersion: CatalogVersion }> {
+export async function listProducts(search: string, limit: number, offset: number, cursor?: string, sort: 'name-asc' | 'name-desc' = 'name-asc'): Promise<{ products: ProductSummary[]; nextCursor?: string; hasNext: boolean; catalogVersion: CatalogVersion }> {
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isSafeInteger(offset) || offset < 0) {
+    throw new RangeError('Invalid product pagination');
+  }
   const version = await getCatalogVersion();
   if (version === 'STORES_NOT_INSTALLED') return { products: [], hasNext: false, catalogVersion: version };
   if (version === 'V1_CATALOG') {
     let query = products.queryProducts();
     if (search) query = query.startsWith('name', search);
+    query = sort === 'name-desc' ? query.descending('name', '_id') : query.ascending('name', '_id');
     const result = await query.limit(Math.min(Math.max(limit, 1), 100)).skip(Math.max(offset, 0)).find();
     return { products: await withAssignmentCounts(result.items.map(mapProduct)), hasNext: result.hasNext(), catalogVersion: version };
   }
-  const searchOptions = { ...(search ? { expression: search } : {}), cursorPaging: { limit: Math.min(Math.max(limit, 1), 100), ...(cursor ? { cursor } : {}) } };
-  const result = await productsV3.searchProducts(searchOptions as never, { fields: ['name', 'media', 'variantsInfo', 'directCategories'] as never });
-  const response = asRecord(result);
-  const mapped = Array.isArray(response.products) ? response.products.map(mapProduct) : [];
-  const cursors = asRecord(response.cursors);
-  const nextCursor = stringValue(cursors.next) || undefined;
-  return { products: await withAssignmentCounts(mapped), ...(nextCursor ? { nextCursor } : {}), hasNext: Boolean(nextCursor), catalogVersion: version };
+  const result = await productsV3.searchProducts({
+    ...(search ? { search: { expression: search, fields: ['name'] } } : {}),
+    sort: [
+      { fieldName: 'name', order: sort === 'name-desc' ? productsV3.SortOrder.DESC : productsV3.SortOrder.ASC },
+    ],
+    cursorPaging: { limit, ...(cursor ? { cursor } : {}) },
+  }, { fields: [productsV3.RequestedFields.DIRECT_CATEGORIES_INFO] });
+  const nextCursor = result.pagingMetadata?.cursors?.next;
+  return {
+    products: await withAssignmentCounts((result.products ?? []).map(mapProduct)),
+    ...(nextCursor ? { nextCursor } : {}),
+    hasNext: result.pagingMetadata?.hasNext ?? Boolean(nextCursor),
+    catalogVersion: version,
+  };
 }

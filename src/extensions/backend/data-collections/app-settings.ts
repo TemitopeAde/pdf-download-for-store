@@ -31,10 +31,10 @@ export default {
   ],
   displayField: 'settingsKey',
   dataPermissions: {
-    itemInsert: 'CMS_EDITOR',
+    itemInsert: 'PRIVILEGED',
     itemRead: 'ANYONE',
-    itemRemove: 'CMS_EDITOR',
-    itemUpdate: 'CMS_EDITOR',
+    itemRemove: 'PRIVILEGED',
+    itemUpdate: 'PRIVILEGED',
   },
   indexes: [{ fields: [{ path: 'settingsKey', order: 'ASC' }], unique: true }],
   initialData: [],

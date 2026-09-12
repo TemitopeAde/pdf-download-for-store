@@ -1,7 +1,7 @@
 import { items } from '@wix/data';
 import { secrets } from '@wix/secrets';
 import { auth } from '@wix/essentials';
-import { COLLECTIONS, DEFAULT_SETTINGS } from './data';
+import { COLLECTIONS, DEFAULT_SETTINGS, insertItem, updateItem } from './data';
 import type { AppSettings, StorageProvider } from './types';
 
 interface SettingsRecord {
@@ -139,7 +139,7 @@ export async function saveStorageSettings(input: Partial<AppSettings> & { apiSec
     value.cloudinarySecretName = CLOUDINARY_SECRET_NAME;
     value.cloudinarySecretId = secretId;
   }
-  if (existing._id) await items.update(COLLECTIONS.settings, { ...value, _id: existing._id });
-  else await items.insert(COLLECTIONS.settings, value);
+  if (existing._id) await updateItem(COLLECTIONS.settings, { ...value, _id: existing._id });
+  else await insertItem(COLLECTIONS.settings, value);
   return toPublicAppSettings(merged);
 }

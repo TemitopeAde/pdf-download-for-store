@@ -11,6 +11,13 @@ export default defineConfig({
   integrations: [wix(), react()],
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        allowedHeaders: ["Content-Type", "Authorization"]
+      }
+    }
   },
   image: { domains: ["static.wixstatic.com"] },
   security: { checkOrigin: false },

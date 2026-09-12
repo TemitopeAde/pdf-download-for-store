@@ -25,10 +25,10 @@ export default {
   ],
   displayField: 'type',
   dataPermissions: {
-    itemInsert: 'CMS_EDITOR',
+    itemInsert: 'PRIVILEGED',
     itemRead: 'ANYONE',
-    itemRemove: 'CMS_EDITOR',
-    itemUpdate: 'CMS_EDITOR',
+    itemRemove: 'PRIVILEGED',
+    itemUpdate: 'PRIVILEGED',
   },
   indexes: [
     { fields: [{ path: 'type', order: 'ASC' }, { path: 'targetId', order: 'ASC' }, { path: 'fileId', order: 'ASC' }], unique: true },

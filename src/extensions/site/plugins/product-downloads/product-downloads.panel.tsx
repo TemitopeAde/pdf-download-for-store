@@ -34,7 +34,7 @@ const Panel: FC = () => {
     void widget.setProp(prop, String(value));
   }, []);
   return <WixDesignSystemProvider><SidePanel width="320" height="100vh"><SidePanel.Content noPadding stretchVertically><Box direction="vertical" gap="SP4" padding="SP4">
-    <Text appearance="H2">Product downloads</Text><Text secondary>Choose a visual style and fine-tune the product-page widget.</Text>
+    <Text appearance="H2">Product downloads</Text><Text secondary>The widget lists every file assigned to this product in the Product Downloads dashboard. Choose a visual style below.</Text>
     <FormField label="Style preset"><Dropdown selectedId={settings.stylePreset} options={[{ id: 'MINIMAL', value: 'Minimal' }, { id: 'SOFT', value: 'Soft card' }, { id: 'OUTLINE', value: 'Outline' }, { id: 'DARK', value: 'Dark' }]} onSelect={(option) => set('stylePreset', String(option.id))} /></FormField>
     <FormField label="Layout"><Dropdown selectedId={settings.layout} options={[{ id: 'LIST', value: 'List' }, { id: 'BUTTONS', value: 'Buttons' }, { id: 'CARDS', value: 'Cards' }, { id: 'ACCORDION', value: 'Accordion' }]} onSelect={(option) => set('layout', String(option.id))} /></FormField>
     <FormField label="Section title"><Input value={settings.displayName} onChange={(event) => set('displayName', event.target.value)} /></FormField>

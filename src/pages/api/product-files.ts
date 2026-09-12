@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
 import { fail, json, ok, readJson } from '../../lib/data';
-import { assignFile, getProductFiles, removeAssignment } from '../../lib/assignments';
+import { assignFiles, getProductFiles, removeAssignment } from '../../lib/assignments';
 import { getStorageSettings } from '../../lib/storage';
+import type { ProductFile } from '../../lib/types';
 
 /**
 This file defines an HTTP endpoint exposed at `/api/product-files`.
@@ -17,7 +18,11 @@ export const GET: APIRoute = async ({ url }) => {
   try {
     const files = await getProductFiles(productId, url.searchParams.getAll('collectionId'));
     const settings = await getStorageSettings();
-    return json(ok({ files: files.map((entry) => ({ ...entry.file, fileId: entry.file._id ?? entry.fileId, assignmentId: entry._id, label: entry.label, description: entry.description, sortOrder: entry.sortOrder, isVisible: entry.isVisible, visibility: entry.visibility })), settings: { title: settings.title, buttonText: settings.buttonText, viewButtonText: settings.viewButtonText, showViewButton: settings.showViewButton } }));
+    const visibleOnly = url.searchParams.get('visibleOnly') === 'true';
+    const mapped = files
+      .filter((entry) => !visibleOnly || entry.isVisible !== false)
+      .map((entry) => ({ ...entry.file, fileId: entry.file._id ?? entry.fileId, assignmentId: entry._id, label: entry.label, description: entry.description, sortOrder: entry.sortOrder, isVisible: entry.isVisible, visibility: entry.visibility }));
+    return json(ok({ files: mapped, settings: { title: settings.title, buttonText: settings.buttonText, viewButtonText: settings.viewButtonText, showViewButton: settings.showViewButton } }));
   } catch (error) {
     console.error('Unable to retrieve product files', error);
     return json(fail('Unable to retrieve product files'), 500);
@@ -27,18 +32,22 @@ export const GET: APIRoute = async ({ url }) => {
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await readJson(request);
-    if (typeof body.productId !== 'string' || typeof body.fileId !== 'string') return json(fail('productId and fileId are required'), 400);
-    const assignment = await assignFile(body.productId, body.fileId, {
-      label: typeof body.label === 'string' ? body.label : undefined,
-      description: typeof body.description === 'string' ? body.description : undefined,
-      sortOrder: typeof body.sortOrder === 'number' ? body.sortOrder : undefined,
-      isVisible: typeof body.isVisible === 'boolean' ? body.isVisible : undefined,
-      visibility: body.visibility === 'MEMBERS_ONLY' ? 'MEMBERS_ONLY' : body.visibility === 'PURCHASE_REQUIRED' ? 'PURCHASE_REQUIRED' : 'PUBLIC',
-    });
-    return json(ok(assignment), 201);
+    const productId = typeof body.productId === 'string' ? body.productId : '';
+    const fileIds = Array.isArray(body.fileIds)
+      ? body.fileIds.filter((value): value is string => typeof value === 'string' && value.length > 0)
+      : typeof body.fileId === 'string' && body.fileId ? [body.fileId] : [];
+    if (!productId || fileIds.length === 0) return json(fail('productId and at least one fileId are required'), 400);
+    const visibility = body.visibility === 'MEMBERS_ONLY' || body.visibility === 'PURCHASE_REQUIRED' ? body.visibility : 'PUBLIC';
+    const metadata: Partial<ProductFile> = { visibility };
+    if (typeof body.label === 'string') metadata.label = body.label;
+    if (typeof body.description === 'string') metadata.description = body.description;
+    if (typeof body.sortOrder === 'number') metadata.sortOrder = body.sortOrder;
+    if (typeof body.isVisible === 'boolean') metadata.isVisible = body.isVisible;
+    const assignments = await assignFiles(productId, fileIds, metadata);
+    return json(ok({ assignments }), 201);
   } catch (error) {
     console.error('Unable to assign file to product', error);
-    return json(fail('Unable to assign file to product'), 400);
+    return json(fail(error instanceof Error ? error.message : 'Unable to assign file to product'), 400);
   }
 };
 
