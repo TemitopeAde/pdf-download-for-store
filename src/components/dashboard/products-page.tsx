@@ -6,12 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { dashboardRequest } from '@/lib/dashboard-api';
 import type { ProductSummary, Visibility } from '@/lib/types';
 import { messageFrom } from './format';
 import type { AssignedProductFile, DashboardResponse, LibraryFile, ProductListData } from './types';
 import { EmptyState, ErrorBanner, PageHeader, StatCard, StatusBadge, TableSkeleton } from './ui-bits';
+import { GlobalAssignmentCard } from './global-assignment-card';
 
 type FileFilter = 'all' | 'with' | 'without';
 
@@ -100,6 +102,7 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
         <StatCard label="With downloads" value={loading && !products.length ? '—' : withFiles} hint="Products on this page with assigned files" icon={CircleCheck} tone="success" />
         <StatCard label="Without downloads" value={loading && !products.length ? '—' : products.length - withFiles} hint="Products on this page with no files attached" icon={FileClock} tone="warning" />
       </div>
+      <GlobalAssignmentCard />
       <section aria-label="Product catalog" className="overflow-hidden rounded-xl border bg-white shadow-[0_2px_8px_0_#182b3a03]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-5">
           <div><h2 className="text-sm font-semibold">Product catalog</h2><p className="mt-1 text-xs text-muted-foreground">Select a product to manage its downloadable files.</p></div>
@@ -185,11 +188,14 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
   const [assigned, setAssigned] = useState<AssignedProductFile[]>([]);
   const [library, setLibrary] = useState<LibraryFile[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showAvailable, setShowAvailable] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const refresh = async (current: ProductSummary) => {
     setBusy(true);
+    setLoading(true);
     setError('');
     try {
       const [filesResponse, libraryResponse] = await Promise.all([
@@ -200,11 +206,13 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
       setAssigned(nextAssigned);
       setLibrary(libraryResponse.data?.files ?? []);
       setSelectedIds([]);
+      setShowAvailable(false);
       onChanged(current.id, nextAssigned.length);
     } catch (reason) {
       setError(messageFrom(reason, 'Unable to load product files'));
     } finally {
       setBusy(false);
+      setLoading(false);
     }
   };
 
@@ -260,7 +268,22 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6">
           {error ? <ErrorBanner message={error} /> : null}
-          <div className="space-y-2">
+          {loading ? <div className="space-y-3" aria-busy="true" aria-label="Loading product files">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-20 w-full rounded-lg" />
+            <Skeleton className="h-20 w-full rounded-lg" />
+          </div> : <>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            aria-expanded={showAvailable}
+            onClick={() => setShowAvailable((current) => !current)}
+          >
+            {showAvailable ? 'Hide available files' : 'Assign more files'}
+          </Button>
+          {showAvailable ? <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <Label>Add files</Label>
               {available.length > 0 ? (
@@ -291,7 +314,7 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
                 })}
               </ul>
             )}
-          </div>
+          </div> : null}
           {assigned.length === 0 ? <EmptyState title="No files on this product" description="Assign one or more files from the library. Every assigned file appears on the product page widget." /> : (
             <div className="space-y-3">
               <p className="text-sm font-medium">{assigned.length} file{assigned.length === 1 ? '' : 's'} on this product</p>
@@ -316,6 +339,7 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
               ))}
             </div>
           )}
+          </>}
         </div>
       </SheetContent>
     </Sheet>

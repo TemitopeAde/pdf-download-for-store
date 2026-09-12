@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { dashboardRequest } from '@/lib/dashboard-api';
@@ -21,6 +22,12 @@ interface UploadSession {
   signature?: string;
 }
 
+interface PendingUpload {
+  file: File;
+  label: string;
+  description: string;
+}
+
 export function FilesPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<LibraryFile[]>([]);
@@ -30,7 +37,7 @@ export function FilesPage() {
   const [status, setStatus] = useState('');
   const [progress, setProgress] = useState(0);
   const [pendingDelete, setPendingDelete] = useState<LibraryFile | undefined>();
-  const [pendingUpload, setPendingUpload] = useState<File | undefined>();
+  const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [editing, setEditing] = useState<LibraryFile | undefined>();
   const [draftName, setDraftName] = useState('');
   const [draftDescription, setDraftDescription] = useState('');
@@ -53,7 +60,7 @@ export function FilesPage() {
 
   useEffect(() => { void load(); }, []);
 
-  const uploadFile = async (file: File, label: string) => {
+  const uploadFile = async (file: File, label: string, description: string) => {
     setStatus(`Preparing ${file.name}…`);
     setProgress(0);
     try {
@@ -71,7 +78,7 @@ export function FilesPage() {
         if (!uploaded.ok) throw new Error('Cloudinary upload failed');
         const payload = await uploaded.json() as { public_id?: string; secure_url?: string; bytes?: number; format?: string };
         if (!payload.public_id || !payload.secure_url) throw new Error('Cloudinary returned incomplete metadata');
-        await dashboardRequest('/api/media', { method: 'POST', body: JSON.stringify({ name: file.name, label, publicId: payload.public_id, secureUrl: payload.secure_url, fileType: file.type || payload.format || 'FILE', fileSize: payload.bytes ?? file.size }) });
+        await dashboardRequest('/api/media', { method: 'POST', body: JSON.stringify({ name: file.name, label, description, publicId: payload.public_id, secureUrl: payload.secure_url, fileType: file.type || payload.format || 'FILE', fileSize: payload.bytes ?? file.size }) });
       } else {
         if (!session.uploadUrl || !session.uploadToken) throw new Error('Wix Media Manager resumable upload is unavailable');
         await new Promise<void>((resolve, reject) => {
@@ -90,13 +97,31 @@ export function FilesPage() {
         if (!finalized.ok) throw new Error('Wix Media Manager could not finalize the upload');
         const descriptor = await finalized.json() as { file?: { id?: string; url?: string; displayName?: string; sizeInBytes?: string } };
         if (!descriptor.file?.id || !descriptor.file.url) throw new Error('Wix returned incomplete file metadata');
-        await dashboardRequest('/api/media', { method: 'POST', body: JSON.stringify({ name: file.name, label, mediaId: descriptor.file.id, url: descriptor.file.url, fileType: file.type || 'FILE', fileSize: Number(descriptor.file.sizeInBytes || file.size) }) });
+        await dashboardRequest('/api/media', { method: 'POST', body: JSON.stringify({ name: file.name, label, description, mediaId: descriptor.file.id, url: descriptor.file.url, fileType: file.type || 'FILE', fileSize: Number(descriptor.file.sizeInBytes || file.size) }) });
       }
       setProgress(100);
       setStatus(`${file.name} uploaded.`);
       await load();
     } catch (reason) {
       setStatus(messageFrom(reason, 'Upload failed'));
+    }
+  };
+
+  const queueFiles = (files: FileList | File[]) => {
+    const nextFiles = Array.from(files);
+    if (nextFiles.length === 0) return;
+    setPendingUploads((current) => [
+      ...current,
+      ...nextFiles.map((file) => ({ file, label: '', description: '' })),
+    ]);
+  };
+
+  const uploadQueuedFiles = async () => {
+    const uploads = pendingUploads;
+    setPendingUploads([]);
+    for (const [index, upload] of uploads.entries()) {
+      setStatus(`Uploading ${index + 1} of ${uploads.length}: ${upload.file.name}…`);
+      await uploadFile(upload.file, upload.label.trim(), upload.description.trim());
     }
   };
 
@@ -129,7 +154,7 @@ export function FilesPage() {
         description="Upload PDFs and other assets to the library, then assign them to products."
         actions={<Button type="button" onClick={() => inputRef.current?.click()}><Upload className="size-4" aria-hidden="true" />Upload file</Button>}
       />
-      <input ref={inputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) { setPendingUpload(file); setDraftLabel(''); } event.target.value = ''; }} />
+      <input ref={inputRef} type="file" multiple className="hidden" onChange={(event) => { if (event.target.files) queueFiles(event.target.files); event.target.value = ''; }} />
       <div className="grid gap-3 sm:grid-cols-3">
         <StatCard label="Files in this view" value={loading ? '—' : files.length} hint="Your reusable digital assets" icon={FileStack} />
         <StatCard label="Assigned to products" value={loading ? '—' : files.filter((file) => file.usedCount > 0).length} hint="Files linked to your catalog" icon={FileCheck2} tone="success" />
@@ -141,8 +166,16 @@ export function FilesPage() {
           <CardDescription>Upload product guides, manuals, PDFs, or ZIPs. Reuse a single file across multiple products.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
+          <div
+            className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center"
+            onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; }}
+            onDrop={(event) => { event.preventDefault(); queueFiles(event.dataTransfer.files); }}
+          >
+            <p className="text-sm font-medium">Drop files here</p>
+            <p className="text-xs text-muted-foreground">Upload multiple PDFs, ZIPs, or guides at once.</p>
+            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>Choose files</Button>
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>Choose file</Button>
             {status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
           </div>
           {progress > 0 && progress < 100 ? (
@@ -192,16 +225,24 @@ export function FilesPage() {
           </Table>
         </div>
       )}
-      <AlertDialog open={Boolean(pendingUpload)} onOpenChange={(open) => { if (!open) setPendingUpload(undefined); }}>
+      <AlertDialog open={pendingUploads.length > 0} onOpenChange={(open) => { if (!open) setPendingUploads([]); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Upload file</AlertDialogTitle>
-            <AlertDialogDescription>Choose the button label shown on product pages. Leave it blank to show Download.</AlertDialogDescription>
+            <AlertDialogTitle>Upload {pendingUploads.length} file{pendingUploads.length === 1 ? '' : 's'}</AlertDialogTitle>
+            <AlertDialogDescription>Set an optional button label and description for each file. Leave either field blank to use its default.</AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="space-y-2"><Label htmlFor="upload-label">Button label (optional)</Label><Input id="upload-label" value={draftLabel} onChange={(event) => setDraftLabel(event.target.value)} placeholder="Download guide" /></div>
+          <div className="max-h-[55vh] space-y-4 overflow-y-auto pr-1">
+            {pendingUploads.map((upload, index) => (
+              <div key={`${upload.file.name}-${upload.file.lastModified}-${index}`} className="space-y-3 rounded-lg border p-3">
+                <p className="truncate text-sm font-medium">{upload.file.name}</p>
+                <div className="space-y-2"><Label htmlFor={`upload-label-${index}`}>Button label (optional)</Label><Input id={`upload-label-${index}`} value={upload.label} onChange={(event) => setPendingUploads((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, label: event.target.value } : item))} placeholder="Download guide" /></div>
+                <div className="space-y-2"><Label htmlFor={`upload-description-${index}`}>Description (optional)</Label><Textarea id={`upload-description-${index}`} value={upload.description} onChange={(event) => setPendingUploads((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, description: event.target.value } : item))} placeholder="What is included in this download?" rows={3} /></div>
+              </div>
+            ))}
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { if (pendingUpload) void uploadFile(pendingUpload, draftLabel.trim()); setPendingUpload(undefined); }}>Upload</AlertDialogAction>
+            <AlertDialogAction onClick={() => void uploadQueuedFiles()}>Upload</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

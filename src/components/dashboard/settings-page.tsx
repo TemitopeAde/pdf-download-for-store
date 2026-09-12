@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { toast, Toaster } from 'sonner';
+import 'sonner/dist/styles.css';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,38 +13,33 @@ import { DEFAULT_SETTINGS } from '@/lib/types';
 import type { AppSettings, StorageProvider, WidgetLayout } from '@/lib/types';
 import { messageFrom } from './format';
 import type { DashboardResponse } from './types';
-import { ErrorBanner, PageHeader, StatusBadge } from './ui-bits';
+import { PageHeader } from './ui-bits';
 
 export function SettingsPage() {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [secret, setSecret] = useState('');
-  const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     dashboardRequest<DashboardResponse<Partial<AppSettings>>>('/api/settings')
       .then((response) => {
         if (response.data) setSettings((current) => ({ ...current, ...response.data }));
       })
-      .catch((reason: unknown) => setError(messageFrom(reason, 'Unable to load settings')));
+      .catch((reason: unknown) => toast.error(messageFrom(reason, 'Unable to load settings')));
   }, []);
 
   const update = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
-    setSaved(false);
     setSettings((current) => ({ ...current, [key]: value }));
   };
 
   const save = async () => {
-    setError('');
-    setSaved(false);
     setSaving(true);
     try {
       await dashboardRequest('/api/settings', { method: 'POST', body: JSON.stringify({ ...settings, ...(secret ? { apiSecret: secret } : {}) }) });
       setSecret('');
-      setSaved(true);
+      toast.success('Settings saved');
     } catch (reason) {
-      setError(messageFrom(reason, 'Unable to save settings'));
+      toast.error(messageFrom(reason, 'Unable to save settings'));
     } finally {
       setSaving(false);
     }
@@ -50,13 +47,12 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
+      <Toaster />
       <PageHeader
         title="Settings"
         description="Choose where files live, who can download them, and the defaults for new product-page widgets."
         actions={<Button type="button" disabled={saving} onClick={() => void save()}>{saving ? 'Saving…' : 'Save settings'}</Button>}
       />
-      {error ? <ErrorBanner message={error} /> : null}
-      {saved ? <StatusBadge tone="success">Settings saved</StatusBadge> : null}
       <Tabs defaultValue="storage" className="space-y-4">
         <TabsList>
           <TabsTrigger value="storage">Storage</TabsTrigger>

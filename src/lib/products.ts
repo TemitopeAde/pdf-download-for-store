@@ -1,6 +1,6 @@
 import { catalogVersioning, products, productsV3 } from '@wix/stores';
 import { items } from '@wix/data';
-import { COLLECTIONS, toProductFile } from './data';
+import { COLLECTIONS, toProductFile, toRule, queryAll } from './data';
 import type { ProductSummary } from './types';
 
 type CatalogVersion = 'V1_CATALOG' | 'V3_CATALOG' | 'STORES_NOT_INSTALLED';
@@ -37,15 +37,24 @@ function mapProduct(value: unknown): ProductSummary {
 
 async function withAssignmentCounts(productsList: ProductSummary[]): Promise<ProductSummary[]> {
   if (!productsList.length) return [];
+  const globalRules = (await queryAll(COLLECTIONS.assignmentRules)).map(toRule).filter((rule) => rule.type === 'ALL_PRODUCTS');
   let page = await items.query(COLLECTIONS.productFiles)
     .hasSome('productId', productsList.map((product) => product.id)).limit(100).find();
-  const counts = new Map<string, number>();
+  const fileIdsByProduct = new Map<string, Set<string>>();
   for (;;) {
-    page.items.map(toProductFile).forEach((assignment) => counts.set(assignment.productId, (counts.get(assignment.productId) ?? 0) + 1));
+    page.items.map(toProductFile).forEach((assignment) => {
+      const fileIds = fileIdsByProduct.get(assignment.productId) ?? new Set<string>();
+      fileIds.add(assignment.fileId);
+      fileIdsByProduct.set(assignment.productId, fileIds);
+    });
     if (!page.hasNext()) break;
     page = await page.next();
   }
-  return productsList.map((product) => ({ ...product, assignedFilesCount: counts.get(product.id) ?? 0 }));
+  return productsList.map((product) => {
+    const fileIds = fileIdsByProduct.get(product.id) ?? new Set<string>();
+    globalRules.forEach((rule) => fileIds.add(rule.fileId));
+    return { ...product, assignedFilesCount: fileIds.size };
+  });
 }
 
 export async function getCatalogVersion(): Promise<CatalogVersion> {

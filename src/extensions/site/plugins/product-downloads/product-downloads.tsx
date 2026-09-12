@@ -45,9 +45,38 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character] ?? character));
 }
 
-function renderFile(file: ProductDownload): string {
+function sanitizeColor(value: string): string {
+  return /^#[0-9a-fA-F]{6,8}$/.test(value) ? value : '#111827';
+}
+
+type FontSetting = { font: string; textDecoration: string };
+
+function applyFont(element: HTMLElement, setting: FontSetting): void {
+  // inputs.selectFont returns CSS shorthand such as `18px "geotica-w01-four-open"`.
+  const font = setting.font.trim() || 'system-ui';
+  element.style.font = font;
+  element.style.textDecoration = setting.textDecoration || '';
+  // Ask the browser to fetch the selected Wix webfont before the button is painted.
+  void document.fonts?.load(font).catch(() => undefined);
+}
+
+function fontValueFromAttribute(value: string | null): FontSetting {
+  if (!value) return { font: 'system-ui', textDecoration: '' };
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (typeof parsed === 'object' && parsed !== null && 'font' in parsed && typeof parsed.font === 'string') {
+      return {
+        font: parsed.font,
+        textDecoration: 'textDecoration' in parsed && typeof parsed.textDecoration === 'string' ? parsed.textDecoration : '',
+      };
+    }
+  } catch { /* Older plugin instances stored the shorthand directly. */ }
+  return { font: value, textDecoration: '' };
+}
+
+function renderFile(file: ProductDownload, labelColor: string): string {
   const buttonText = file.label?.trim() || 'Download';
-  return `<button type="button" data-action="download" data-file-id="${escapeHtml(file.fileId)}" style="border:0;border-radius:4px;padding:10px 16px;cursor:pointer">${escapeHtml(buttonText)}<span class="product-downloads-button-spinner" aria-hidden="true"></span></button>`;
+  return `<button type="button" data-action="download" data-file-id="${escapeHtml(file.fileId)}" style="display:inline-flex;align-items:center;gap:8px;border:0;border-radius:4px;cursor:pointer;color:${sanitizeColor(labelColor)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>${escapeHtml(buttonText)}<span class="product-downloads-button-spinner" aria-hidden="true"></span></button>`;
 }
 
 class ProductDownloadsElement extends HTMLElement {
@@ -55,7 +84,7 @@ class ProductDownloadsElement extends HTMLElement {
   private toastHost?: HTMLDivElement;
 
   static get observedAttributes() {
-    return ['product-id'];
+    return ['product-id', 'label-font', 'label-color', 'layout'];
   }
 
   connectedCallback() {
@@ -84,8 +113,27 @@ class ProductDownloadsElement extends HTMLElement {
   }
 
   private renderLoadingButton() {
-    const buttonText = escapeHtml(this.getAttribute('button-text') || 'Download');
-    this.innerHTML = `<button type="button" disabled aria-busy="true" style="border:0;border-radius:4px;padding:10px 16px;opacity:1;cursor:pointer">${buttonText}</button>`;
+    this.innerHTML = `<div class="product-downloads-loading" role="status" aria-label="Loading downloads"><span></span><span></span><span></span></div><style>
+      .product-downloads-loading {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 24px;
+      }
+      .product-downloads-loading span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: product-downloads-loading-animation 1.2s infinite ease-in-out;
+      }
+      .product-downloads-loading span:nth-child(2) { animation-delay: 0.15s; }
+      .product-downloads-loading span:nth-child(3) { animation-delay: 0.3s; }
+      @keyframes product-downloads-loading-animation {
+        0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+        40% { opacity: 1; transform: scale(1); }
+      }
+    </style>`;
   }
 
   private async load() {
@@ -113,7 +161,10 @@ class ProductDownloadsElement extends HTMLElement {
   }
 
   private render(productId: string, files: ProductDownload[]) {
-    const listStyle = 'display:flex;flex-wrap:wrap;gap:8px;';
+    const layout = this.getAttribute('layout') === 'ROW' ? 'row' : 'column';
+    const listStyle = `display:flex;flex-direction:${layout};align-items:flex-start;gap:8px;`;
+    const labelFont = fontValueFromAttribute(this.getAttribute('label-font'));
+    const labelColor = this.getAttribute('label-color') || '#111827';
     this.innerHTML = `<style>
       .product-downloads-button-spinner {
         display: none;
@@ -129,8 +180,9 @@ class ProductDownloadsElement extends HTMLElement {
       @keyframes product-downloads-button-spinner-animation {
         to { transform: rotate(360deg); }
       }
-    </style><div style="${listStyle}">${files.map(renderFile).join('')}</div>`;
+    </style><div style="${listStyle}">${files.map((file) => renderFile(file, labelColor)).join('')}</div>`;
     this.querySelectorAll<HTMLButtonElement>('button[data-action="download"]').forEach((button) => {
+      applyFont(button, labelFont);
       button.addEventListener('click', () => void this.openFile(productId, button.dataset.fileId || '', button));
     });
   }

@@ -71,3 +71,34 @@ export async function saveRule(rule: AssignmentRule): Promise<AssignmentRule> {
   const value = { type: rule.type, targetId: rule.targetId ?? '', fileId: rule.fileId, label: rule.label ?? '', description: rule.description ?? '', sortOrder: rule.sortOrder, isVisible: rule.isVisible, visibility: rule.visibility ?? 'PUBLIC' };
   return toRule(rule._id ? await updateItem(COLLECTIONS.assignmentRules, { ...value, _id: rule._id }) : await insertItem(COLLECTIONS.assignmentRules, value));
 }
+
+export async function getGlobalRules(): Promise<AssignmentRule[]> {
+  const rules = await queryAll(COLLECTIONS.assignmentRules);
+  return rules.map(toRule).filter((rule) => rule.type === 'ALL_PRODUCTS');
+}
+
+export async function assignFilesToAllProducts(assignments: Array<{ fileId: string; label?: string; visibility?: AssignmentRule['visibility'] }>): Promise<AssignmentRule[]> {
+  const existing = await getGlobalRules();
+  const existingByFile = new Map(existing.map((rule) => [rule.fileId, rule]));
+  const assigned: AssignmentRule[] = [];
+  for (const assignment of assignments) {
+    const fileId = assignment.fileId;
+    if (!fileId || assigned.some((rule) => rule.fileId === fileId)) continue;
+    const current = existingByFile.get(fileId);
+    assigned.push(await saveRule({
+      ...(current?._id ? { _id: current._id } : {}),
+      type: 'ALL_PRODUCTS',
+      fileId,
+      sortOrder: current?.sortOrder ?? assigned.length,
+      isVisible: current?.isVisible ?? true,
+      ...(assignment.label !== undefined ? { label: assignment.label } : current?.label ? { label: current.label } : {}),
+      ...(current?.description ? { description: current.description } : {}),
+      visibility: assignment.visibility ?? current?.visibility ?? 'PUBLIC',
+    }));
+  }
+  return assigned;
+}
+
+export async function removeRule(id: string): Promise<void> {
+  await removeItem(COLLECTIONS.assignmentRules, id);
+}
