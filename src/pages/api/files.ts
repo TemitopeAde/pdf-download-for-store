@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { COLLECTIONS, fail, getCollectionItem, insertItem, json, ok, queryAll, queryCollection, readJson, removeItem, requiredString, toFile, toProductFile, updateItem } from '../../lib/data';
+import { currentPlan } from '../../lib/plans';
 
 /**
 This file defines an HTTP endpoint exposed at `/api/files`.
@@ -11,8 +12,11 @@ Call them from frontend extensions with `httpClient.fetchWithAuth()` from
 
 export const GET: APIRoute = async ({ url }) => {
   try {
+    const plan = currentPlan();
+    const requestedLimit = Number(url.searchParams.get('limit') ?? 100);
+    const limit = plan.maxFiles === null ? requestedLimit : Math.min(requestedLimit, plan.maxFiles);
     const [fileRecords, assignments] = await Promise.all([
-      queryCollection(COLLECTIONS.files, Number(url.searchParams.get('limit') ?? 100), Number(url.searchParams.get('offset') ?? 0), url.searchParams.get('search') ?? undefined),
+      queryCollection(COLLECTIONS.files, limit, Number(url.searchParams.get('offset') ?? 0), url.searchParams.get('search') ?? undefined),
       queryAll(COLLECTIONS.productFiles),
     ]);
     const usage = new Map<string, number>();
@@ -30,6 +34,8 @@ export const GET: APIRoute = async ({ url }) => {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const plan = currentPlan();
+    if (plan.maxFiles !== null && (await queryAll(COLLECTIONS.files)).length >= plan.maxFiles) return json(fail(`Your ${plan.name} plan allows up to ${plan.maxFiles} files. Upgrade to add more.`), 403);
     const body = await readJson(request);
     const name = requiredString(body, 'name');
     const url = requiredString(body, 'url');

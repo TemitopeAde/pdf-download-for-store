@@ -7,6 +7,7 @@ import { checkCountryGate, resolveCountry } from '../../lib/geolocation';
 import { getStorageSettings } from '../../lib/storage';
 import { getProductFiles } from '../../lib/assignments';
 import { currentMemberPurchasedProduct } from '../../lib/purchases';
+import { currentPlan } from '../../lib/plans';
 
 /**
 This file defines an HTTP endpoint exposed at `/api/downloads`.
@@ -38,15 +39,17 @@ export const GET: APIRoute = async ({ request, url }) => {
       visibility: assignment?.visibility ?? 'PUBLIC',
     });
     if (assignment?.visibility === 'MEMBERS_ONLY') {
+      if (!currentPlan().allowsAdvancedAccess) return json(fail('Advanced access rules require the Pro plan or higher'), 403);
       const token = await auth.getTokenInfo();
       if (!token.active || token.subjectType !== 'MEMBER') return json(fail('Please log in to download this file'), 401);
     }
     if (assignment?.visibility === 'PURCHASE_REQUIRED') {
+      if (!currentPlan().allowsAdvancedAccess) return json(fail('Advanced access rules require the Pro plan or higher'), 403);
       const purchased = await currentMemberPurchasedProduct(productId);
       console.info('[product-downloads] purchase authorization result', { productId, fileId, purchased });
       if (!purchased) return json(fail('Purchase the product to download this file'), 403);
     }
-    if (settings.analyticsEnabled) {
+    if (settings.analyticsEnabled && currentPlan().allowsAnalytics) {
       try {
         await items.insert(COLLECTIONS.downloadEvents, { fileId, productId, downloadedAt: new Date(), countryCode: countryCode ?? '' });
       } catch (error) {
@@ -78,7 +81,7 @@ export const POST: APIRoute = async ({ request }) => {
     try { countryCode = await resolveCountry(request); } catch (error) { console.error('Country lookup failed', error); }
     const gate = checkCountryGate(settings.countryGateMode, settings.countryCodes, countryCode, settings.countryGateFailOpen);
     if (!gate.allowed) return json(fail(gate.reason ?? 'Downloads are not available in your country'), 403);
-    await items.insert(COLLECTIONS.downloadEvents, { fileId, productId, downloadedAt: new Date(), countryCode: countryCode ?? '' });
+    if (currentPlan().allowsAnalytics) await items.insert(COLLECTIONS.downloadEvents, { fileId, productId, downloadedAt: new Date(), countryCode: countryCode ?? '' });
     return json(ok({ countryCode }));
   } catch (error) {
     console.error('Unable to track download', error);

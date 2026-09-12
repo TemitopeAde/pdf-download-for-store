@@ -14,6 +14,7 @@ import { messageFrom } from './format';
 import type { AssignedProductFile, DashboardResponse, LibraryFile, ProductListData } from './types';
 import { EmptyState, ErrorBanner, PageHeader, StatCard, StatusBadge, TableSkeleton } from './ui-bits';
 import { GlobalAssignmentCard } from './global-assignment-card';
+import { currentPlan } from '@/lib/plans';
 
 type FileFilter = 'all' | 'with' | 'without';
 
@@ -185,6 +186,7 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
 }
 
 function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummary; onClose: () => void; onChanged: (productId: string, count: number) => void }) {
+  const plan = currentPlan();
   const [assigned, setAssigned] = useState<AssignedProductFile[]>([]);
   const [library, setLibrary] = useState<LibraryFile[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -326,7 +328,7 @@ function ProductSheet({ product, onClose, onChanged }: { product?: ProductSummar
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Select value={entry.visibility ?? 'PUBLIC'} onValueChange={(value) => void updateVisibility(entry, value as Visibility)}>
-                  <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+                  <SelectTrigger disabled={!plan.allowsAdvancedAccess} className="w-44"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="PUBLIC">Anyone</SelectItem>
                     <SelectItem value="MEMBERS_ONLY">Members only</SelectItem>

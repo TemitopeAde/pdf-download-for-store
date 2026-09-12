@@ -7,8 +7,10 @@ import type { AnalyticsSummary } from '@/lib/types';
 import { formatDate, messageFrom } from './format';
 import type { DashboardResponse } from './types';
 import { EmptyState, ErrorBanner, PageHeader, StatCard, TableSkeleton } from './ui-bits';
+import { currentPlan } from '@/lib/plans';
 
 export function AnalyticsPage({ onOpenProducts }: { onOpenProducts: () => void }) {
+  const plan = currentPlan();
   const [data, setData] = useState<AnalyticsSummary | undefined>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -26,7 +28,9 @@ export function AnalyticsPage({ onOpenProducts }: { onOpenProducts: () => void }
     }
   };
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { if (plan.allowsAnalytics) void load(); }, [plan.allowsAnalytics]);
+
+  if (!plan.allowsAnalytics) return <div className="space-y-6"><PageHeader title="Analytics" description="See which files and products generate downloads." /><EmptyState title="Analytics is a Pro feature" description="Upgrade to Pro or Business to track downloads and view analytics." /></div>;
 
   return (
     <div className="space-y-6">

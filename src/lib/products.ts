@@ -2,6 +2,7 @@ import { catalogVersioning, products, productsV3 } from '@wix/stores';
 import { items } from '@wix/data';
 import { COLLECTIONS, toProductFile, toRule, queryAll } from './data';
 import type { ProductSummary } from './types';
+import { currentPlan } from './plans';
 
 type CatalogVersion = 'V1_CATALOG' | 'V3_CATALOG' | 'STORES_NOT_INSTALLED';
 
@@ -37,7 +38,9 @@ function mapProduct(value: unknown): ProductSummary {
 
 async function withAssignmentCounts(productsList: ProductSummary[]): Promise<ProductSummary[]> {
   if (!productsList.length) return [];
-  const globalRules = (await queryAll(COLLECTIONS.assignmentRules)).map(toRule).filter((rule) => rule.type === 'ALL_PRODUCTS');
+  const globalRules = currentPlan().allowsGlobalAssignments
+    ? (await queryAll(COLLECTIONS.assignmentRules)).map(toRule).filter((rule) => rule.type === 'ALL_PRODUCTS')
+    : [];
   let page = await items.query(COLLECTIONS.productFiles)
     .hasSome('productId', productsList.map((product) => product.id)).limit(100).find();
   const fileIdsByProduct = new Map<string, Set<string>>();

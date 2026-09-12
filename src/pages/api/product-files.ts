@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
-import { fail, json, ok, readJson } from '../../lib/data';
+import { COLLECTIONS, fail, json, ok, queryAll, readJson, toProductFile } from '../../lib/data';
 import { assignFiles, getProductFiles, removeAssignment } from '../../lib/assignments';
 import { getStorageSettings } from '../../lib/storage';
 import type { ProductFile } from '../../lib/types';
+import { currentPlan } from '../../lib/plans';
 
 /**
 This file defines an HTTP endpoint exposed at `/api/product-files`.
@@ -38,6 +39,12 @@ export const POST: APIRoute = async ({ request }) => {
       : typeof body.fileId === 'string' && body.fileId ? [body.fileId] : [];
     if (!productId || fileIds.length === 0) return json(fail('productId and at least one fileId are required'), 400);
     const visibility = body.visibility === 'MEMBERS_ONLY' || body.visibility === 'PURCHASE_REQUIRED' ? body.visibility : 'PUBLIC';
+    const plan = currentPlan();
+    if (!plan.allowsAdvancedAccess && visibility !== 'PUBLIC') return json(fail('Members-only and purchase-required downloads require the Pro plan or higher'), 403);
+    if (plan.maxProducts !== null) {
+      const assignedProductIds = new Set((await queryAll(COLLECTIONS.productFiles)).map(toProductFile).map((assignment) => assignment.productId));
+      if (!assignedProductIds.has(productId) && assignedProductIds.size >= plan.maxProducts) return json(fail(`Your ${plan.name} plan allows assignments on up to ${plan.maxProducts} products. Upgrade to add more.`), 403);
+    }
     const metadata: Partial<ProductFile> = { visibility };
     if (typeof body.label === 'string') metadata.label = body.label;
     if (typeof body.description === 'string') metadata.description = body.description;

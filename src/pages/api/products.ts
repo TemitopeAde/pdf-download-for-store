@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { fail, json, ok } from '../../lib/data';
-import { listProducts } from '../../lib/products';
+import { getCatalogVersion, listProducts } from '../../lib/products';
+import { currentPlan } from '../../lib/plans';
 
 /**
 This file defines an HTTP endpoint exposed at `/api/products`.
@@ -12,13 +13,17 @@ Call them from frontend extensions with `httpClient.fetchWithAuth()` from
 
 export const GET: APIRoute = async ({ url }) => {
   try {
-    const limit = Number(url.searchParams.get('limit') ?? 40);
+    const requestedLimit = Number(url.searchParams.get('limit') ?? 40);
     const offset = Number(url.searchParams.get('offset') ?? 0);
     const sort = url.searchParams.get('sort') ?? 'name-asc';
-    if (!Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isSafeInteger(offset) || offset < 0 || (sort !== 'name-asc' && sort !== 'name-desc')) {
+    if (!Number.isInteger(requestedLimit) || requestedLimit < 1 || requestedLimit > 100 || !Number.isSafeInteger(offset) || offset < 0 || (sort !== 'name-asc' && sort !== 'name-desc')) {
       return json(fail('Invalid product pagination or sort'), 400);
     }
+    const plan = currentPlan();
+    if (plan.maxProducts !== null && offset > 0) return json(ok({ products: [], hasNext: false, catalogVersion: await getCatalogVersion() }));
+    const limit = plan.maxProducts === null ? requestedLimit : Math.min(requestedLimit, plan.maxProducts);
     const result = await listProducts(url.searchParams.get('search') ?? '', limit, offset, url.searchParams.get('cursor') ?? undefined, sort);
+    if (plan.maxProducts !== null) result.hasNext = false;
     return json(ok(result));
   } catch (error) {
     console.error('Unable to retrieve products', error);

@@ -14,8 +14,10 @@ import type { AppSettings, StorageProvider, WidgetLayout } from '@/lib/types';
 import { messageFrom } from './format';
 import type { DashboardResponse } from './types';
 import { PageHeader } from './ui-bits';
+import { currentPlan } from '@/lib/plans';
 
 export function SettingsPage() {
+  const plan = currentPlan();
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [secret, setSecret] = useState('');
   const [saving, setSaving] = useState(false);
@@ -154,7 +156,7 @@ export function SettingsPage() {
               <ToggleRow label="Show description" checked={settings.showDescription} onCheckedChange={(value) => update('showDescription', value)} />
               <ToggleRow label="Open in a new tab" checked={settings.openInNewTab} onCheckedChange={(value) => update('openInNewTab', value)} />
               <ToggleRow label="Show view button" checked={settings.showViewButton} onCheckedChange={(value) => update('showViewButton', value)} />
-              <ToggleRow label="Analytics enabled" hint="Records downloads for the Analytics page." checked={settings.analyticsEnabled} onCheckedChange={(value) => update('analyticsEnabled', value)} />
+              <ToggleRow label="Analytics enabled" hint={plan.allowsAnalytics ? 'Records downloads for the Analytics page.' : 'Available on the Pro plan and higher.'} checked={plan.allowsAnalytics && settings.analyticsEnabled} disabled={!plan.allowsAnalytics} onCheckedChange={(value) => update('analyticsEnabled', value)} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -172,14 +174,14 @@ function Field({ id, label, value, onChange }: { id: string; label: string; valu
   );
 }
 
-function ToggleRow({ label, hint, checked, onCheckedChange }: { label: string; hint?: string; checked: boolean; onCheckedChange: (value: boolean) => void }) {
+function ToggleRow({ label, hint, checked, disabled = false, onCheckedChange }: { label: string; hint?: string; checked: boolean; disabled?: boolean; onCheckedChange: (value: boolean) => void }) {
   return (
     <div className="flex items-center justify-between gap-4 rounded-lg border p-4 md:col-span-2">
       <div>
         <Label>{label}</Label>
         {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
       </div>
-      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+      <Switch disabled={disabled} checked={checked} onCheckedChange={onCheckedChange} />
     </div>
   );
 }

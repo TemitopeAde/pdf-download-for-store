@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
 import { files as wixMediaFiles } from '@wix/media';
 import { auth } from '@wix/essentials';
-import { COLLECTIONS, insertItem, json, fail, ok, readJson, toFile } from '../../lib/data';
+import { COLLECTIONS, insertItem, json, fail, ok, queryAll, readJson, toFile } from '../../lib/data';
 import { cloudinarySignature, getCloudinaryApiSecret, getStorageSettings, toPublicStorageSettings } from '../../lib/storage';
+import { currentPlan } from '../../lib/plans';
 
 /**
 This file defines an HTTP endpoint exposed at `/api/media`.
@@ -14,6 +15,8 @@ Call them from frontend extensions with `httpClient.fetchWithAuth()` from
 
 export const GET: APIRoute = async ({ url }) => {
   try {
+    const plan = currentPlan();
+    if (plan.maxFiles !== null && (await queryAll(COLLECTIONS.files)).length >= plan.maxFiles) return json(fail(`Your ${plan.name} plan allows up to ${plan.maxFiles} files. Upgrade to add more.`), 403);
     const settings = await getStorageSettings();
     if (settings.storageProvider !== 'CLOUDINARY') {
       const mimeType = url.searchParams.get('mimeType') || 'application/octet-stream';
@@ -47,6 +50,8 @@ export const GET: APIRoute = async ({ url }) => {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const plan = currentPlan();
+    if (plan.maxFiles !== null && (await queryAll(COLLECTIONS.files)).length >= plan.maxFiles) return json(fail(`Your ${plan.name} plan allows up to ${plan.maxFiles} files. Upgrade to add more.`), 403);
     const settings = await getStorageSettings();
     const body = await readJson(request);
     const externalId = typeof body.publicId === 'string' ? body.publicId : typeof body.mediaId === 'string' ? body.mediaId : '';

@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { assignFilesToAllProducts, getGlobalRules, removeRule } from '../../lib/assignments';
 import { fail, json, ok, readJson } from '../../lib/data';
 import type { Visibility } from '../../lib/types';
+import { currentPlan } from '../../lib/plans';
 
 export const GET: APIRoute = async () => {
   try {
@@ -13,6 +14,7 @@ export const GET: APIRoute = async () => {
 };
 
 export const POST: APIRoute = async ({ request }) => {
+  if (!currentPlan().allowsGlobalAssignments) return json(fail('Global product assignments require the Pro plan or higher'), 403);
   try {
     const body = await readJson(request);
     const assignments = Array.isArray(body.assignments)

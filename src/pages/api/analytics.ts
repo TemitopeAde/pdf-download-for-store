@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { fail, json, ok } from '../../lib/data';
 import { getAnalyticsSummary } from '../../lib/analytics';
+import { currentPlan } from '../../lib/plans';
 
 /**
 This file defines an HTTP endpoint exposed at `/api/analytics`.
@@ -11,6 +12,7 @@ Call them from frontend extensions with `httpClient.fetchWithAuth()` from
 */
 
 export const GET: APIRoute = async () => {
+  if (!currentPlan().allowsAnalytics) return json(fail('Analytics require the Pro plan or higher'), 403);
   try {
     return json(ok(await getAnalyticsSummary()));
   } catch (error) {

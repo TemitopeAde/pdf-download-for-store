@@ -12,12 +12,14 @@ import { messageFrom } from './format';
 import type { DashboardResponse, LibraryFile } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ErrorBanner } from './ui-bits';
+import { currentPlan } from '@/lib/plans';
 
 type Access = 'PUBLIC' | 'MEMBERS_ONLY' | 'PURCHASE_REQUIRED';
 interface GlobalRule { _id?: string; fileId: string; label?: string; visibility?: Access; }
 interface FileDraft { label: string; visibility: Access; }
 
 export function GlobalAssignmentCard({ onSaved }: { onSaved?: () => void | Promise<void> }) {
+  const plan = currentPlan();
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<LibraryFile[]>([]);
   const [rules, setRules] = useState<GlobalRule[]>([]);
@@ -85,10 +87,10 @@ export function GlobalAssignmentCard({ onSaved }: { onSaved?: () => void | Promi
     <Card className="border-primary/15 bg-primary/[0.025]">
       <CardHeader className="flex-row items-start justify-between gap-4">
         <div><CardTitle className="flex items-center gap-2 text-base"><Globe2 className="size-4 text-primary" aria-hidden="true" />All products</CardTitle><CardDescription className="mt-1">Apply one or more library files to every current and future product.</CardDescription></div>
-        <Button type="button" onClick={() => setOpen(true)}>Manage files</Button>
+        <Button type="button" disabled={!plan.allowsGlobalAssignments} onClick={() => setOpen(true)}>{plan.allowsGlobalAssignments ? 'Manage files' : 'Upgrade to Pro'}</Button>
       </CardHeader>
       <CardContent className="pt-0 text-sm text-muted-foreground">
-        {rules.length > 0 ? `${rules.length} file${rules.length === 1 ? '' : 's'} assigned globally.` : 'No files are assigned globally.'}
+        {plan.allowsGlobalAssignments ? (rules.length > 0 ? `${rules.length} file${rules.length === 1 ? '' : 's'} assigned globally.` : 'No files are assigned globally.') : 'Global assignments are available on the Pro plan and higher.'}
       </CardContent>
     </Card>
     <Dialog open={open} onOpenChange={setOpen}>

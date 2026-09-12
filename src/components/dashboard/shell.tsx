@@ -2,6 +2,7 @@ import { ArrowUpRight, BarChart3, ChevronRight, CreditCard, Download, FileStack,
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import type { PageKind } from './types';
+import { createUpgradeUrl, CURRENT_PLAN } from '@/lib/plans';
 
 const navigation: Array<{ id: PageKind; label: string; icon: typeof Package }> = [
   { id: 'products', label: 'Products', icon: Package },
@@ -41,6 +42,14 @@ export function DashboardShell({ page, onNavigate, children }: { page: PageKind;
             <p className="text-sm font-semibold">A little extra for every product</p>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">Keep guides, manuals, and downloads together in your file library.</p>
             <button type="button" onClick={() => onNavigate('files')} className="mt-4 flex items-center gap-2 text-xs font-semibold text-primary hover:underline">Open file library <ArrowUpRight className="size-3.5" aria-hidden="true" /></button>
+          </div>
+          <div className="mt-4 rounded-xl border border-primary/15 bg-primary/[0.025] p-4">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground">Current plan</p>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">{CURRENT_PLAN}</span>
+            </div>
+            <p className="mt-2 text-sm font-semibold">Need more downloads?</p>
+            <a href={createUpgradeUrl()} target="_blank" rel="noreferrer" className="mt-3 flex items-center gap-2 text-xs font-semibold text-primary hover:underline">Upgrade plan <ArrowUpRight className="size-3.5" aria-hidden="true" /></a>
           </div>
           <p className="mt-5 px-3 text-[11px] text-muted-foreground">Built for your Wix store</p>
         </aside>

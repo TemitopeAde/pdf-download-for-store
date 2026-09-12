@@ -12,6 +12,7 @@ import { dashboardRequest } from '@/lib/dashboard-api';
 import { formatBytes, formatDate, messageFrom } from './format';
 import type { DashboardResponse, LibraryFile } from './types';
 import { EmptyState, ErrorBanner, PageHeader, StatCard, TableSkeleton } from './ui-bits';
+import { currentPlan } from '@/lib/plans';
 
 interface UploadSession {
   provider: 'WIX_MEDIA' | 'CLOUDINARY';
@@ -29,6 +30,7 @@ interface PendingUpload {
 }
 
 export function FilesPage() {
+  const plan = currentPlan();
   const inputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<LibraryFile[]>([]);
   const [search, setSearch] = useState('');
@@ -113,13 +115,18 @@ export function FilesPage() {
     }
   };
 
-  const queueFiles = (files: FileList | File[]) => {
-    const nextFiles = Array.from(files);
+  const queueFiles = (selectedFiles: FileList | File[]) => {
+    const nextFiles = Array.from(selectedFiles);
     if (nextFiles.length === 0) return;
+    const remaining = plan.maxFiles === null ? nextFiles : nextFiles.slice(0, Math.max(plan.maxFiles - files.length - pendingUploads.length, 0));
+    if (remaining.length === 0) {
+      setStatus(`Your ${plan.name} plan allows up to ${plan.maxFiles} files. Upgrade to add more.`);
+      return;
+    }
     console.info('[pdf-downloads] files queued', { count: nextFiles.length, names: nextFiles.map((file) => file.name) });
     setPendingUploads((current) => [
       ...current,
-      ...nextFiles.map((file) => ({ file, label: '', description: '' })),
+      ...remaining.map((file) => ({ file, label: '', description: '' })),
     ]);
   };
 
@@ -160,7 +167,7 @@ export function FilesPage() {
       <PageHeader
         title="File library"
         description="Upload PDFs and other assets to the library, then assign them to products."
-        actions={<Button type="button" onClick={() => { console.info('[pdf-downloads] header picker clicked', { inputAvailable: Boolean(inputRef.current) }); inputRef.current?.click(); }}><Upload className="size-4" aria-hidden="true" />Upload file</Button>}
+        actions={<Button type="button" disabled={plan.maxFiles !== null && files.length + pendingUploads.length >= plan.maxFiles} onClick={() => { console.info('[pdf-downloads] header picker clicked', { inputAvailable: Boolean(inputRef.current) }); inputRef.current?.click(); }}><Upload className="size-4" aria-hidden="true" />Upload file</Button>}
       />
       <input id="upload-files" ref={inputRef} type="file" multiple className="sr-only" onChange={(event) => { console.info('[pdf-downloads] file input changed', { count: event.target.files?.length ?? 0 }); if (event.target.files) queueFiles(event.target.files); event.target.value = ''; }} />
       <div className="grid gap-3 sm:grid-cols-3">
@@ -185,7 +192,7 @@ export function FilesPage() {
             onDrop={(event) => { event.preventDefault(); console.info('[pdf-downloads] files dropped', { count: event.dataTransfer.files.length }); queueFiles(event.dataTransfer.files); }}
           >
             <p className="text-sm font-medium">Drop files here</p>
-            <p className="text-xs text-muted-foreground">Upload multiple PDFs, ZIPs, or guides at once.</p>
+            <p className="text-xs text-muted-foreground">{plan.maxFiles === null ? 'Upload multiple PDFs, ZIPs, or guides at once.' : `${files.length} of ${plan.maxFiles} files used on the ${plan.name} plan.`}</p>
             <Button asChild type="button" variant="outline">
               <label htmlFor="upload-files" onClick={(event) => { event.preventDefault(); event.stopPropagation(); console.info('[pdf-downloads] choose files clicked', { inputAvailable: Boolean(inputRef.current) }); inputRef.current?.click(); }}>Choose files</label>
             </Button>

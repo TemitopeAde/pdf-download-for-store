@@ -1,19 +1,21 @@
 import { Check, CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PageHeader } from './ui-bits';
+import { createUpgradeUrl, CURRENT_PLAN } from '@/lib/plans';
 
 const plans = [
-  { name: 'Basic', price: '$9', description: 'For small stores getting started', featured: false },
-  { name: 'Pro', price: '$19', description: 'For growing stores with more downloads', featured: true },
-  { name: 'Business', price: '$49', description: 'For established stores and larger catalogs', featured: false },
+  { name: 'Basic', price: 'Free', description: 'A limited way to get started', featured: false },
+  { name: 'Pro', price: '$3.50', description: 'For growing stores with more downloads', featured: true },
+  { name: 'Business', price: '$6', description: 'For established stores and larger catalogs', featured: false },
 ] as const;
 
 const features = [
-  { name: 'File library', values: ['25 files', '100 files', 'Unlimited'] },
-  { name: 'Products', values: ['25 products', 'Unlimited', 'Unlimited'] },
-  { name: 'Download access rules', values: [true, true, true] },
+  { name: 'File library', values: ['5 files', '100 files', 'Unlimited'] },
+  { name: 'Products', values: ['5 products', '50 products', 'Unlimited'] },
+  { name: 'Download access', values: ['Everyone only', 'All access rules', 'All access rules'] },
   { name: 'Global product assignments', values: [false, true, true] },
   { name: 'Download analytics', values: [false, true, true] },
   { name: 'Priority support', values: [false, false, true] },
@@ -32,7 +34,10 @@ export function PricingPage() {
                 {plan.featured ? <Badge>Most popular</Badge> : null}
               </div>
               <CardDescription>{plan.description}</CardDescription>
-              <p className="pt-3 text-3xl font-semibold">{plan.price}<span className="text-sm font-normal text-muted-foreground"> / month</span></p>
+              <p className="pt-3 text-3xl font-semibold">{plan.price}{plan.price !== 'Free' ? <span className="text-sm font-normal text-muted-foreground"> / month</span> : null}</p>
+              <div className="pt-4">
+                {plan.name === CURRENT_PLAN ? <Badge variant="secondary">Current plan</Badge> : <Button asChild variant={plan.featured ? 'default' : 'outline'} className="w-full"><a href={createUpgradeUrl()} target="_blank" rel="noreferrer">Upgrade to {plan.name}</a></Button>}
+              </div>
             </CardHeader>
           </Card>
         ))}
@@ -67,7 +72,7 @@ export function PricingPage() {
           </div>
         </CardContent>
       </Card>
-      <p className="flex items-center gap-2 text-xs text-muted-foreground"><CreditCard className="size-3.5" aria-hidden="true" />Pricing is currently a preview table. No plan can be purchased yet.</p>
+      <p className="flex items-center gap-2 text-xs text-muted-foreground"><CreditCard className="size-3.5" aria-hidden="true" />You are currently on the {CURRENT_PLAN} plan. Billing and checkout will be connected later.</p>
     </div>
   );
 }

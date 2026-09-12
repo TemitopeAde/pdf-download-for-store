@@ -1,6 +1,7 @@
 import { items } from '@wix/data';
 import { COLLECTIONS, insertItem, queryAll, removeItem, toFile, toProductFile, toRule, updateItem } from './data';
 import type { AssignmentRule, DownloadFile, ProductFile } from './types';
+import { currentPlan } from './plans';
 
 async function queryByProduct(productId: string): Promise<ProductFile[]> {
   const records = [];
@@ -25,7 +26,7 @@ export async function getProductFiles(productId: string, collectionIds: string[]
     return [mapped._id, mapped] as const;
   }).filter((entry) => entry[0]));
   const assignmentRules = rules.map(toRule).filter((rule) => {
-    if (rule.type === 'ALL_PRODUCTS') return true;
+    if (rule.type === 'ALL_PRODUCTS') return currentPlan().allowsGlobalAssignments;
     if (rule.type === 'PRODUCT') return rule.targetId === productId;
     return Boolean(rule.targetId && collectionIds.includes(rule.targetId));
   });
