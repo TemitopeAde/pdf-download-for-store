@@ -13,6 +13,7 @@ export interface DownloadFile {
   fileType: string;
   fileSize?: number;
   description?: string;
+  label?: string;
   createdAt?: string;
   updatedAt?: string;
   isActive?: boolean;

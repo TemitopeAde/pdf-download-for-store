@@ -32,6 +32,7 @@ export const toFile = (value: unknown): DownloadFile => {
     fileType: asString(record.fileType, 'FILE'),
     fileSize: typeof record.fileSize === 'number' ? record.fileSize : undefined,
     description: asString(record.description) || undefined,
+    label: asString(record.label) || undefined,
     createdAt: asString(record.createdAt) || undefined,
     updatedAt: asString(record.updatedAt) || undefined,
     isActive: asBoolean(record.isActive, true),

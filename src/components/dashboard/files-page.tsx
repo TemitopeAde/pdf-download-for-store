@@ -30,9 +30,11 @@ export function FilesPage() {
   const [status, setStatus] = useState('');
   const [progress, setProgress] = useState(0);
   const [pendingDelete, setPendingDelete] = useState<LibraryFile | undefined>();
+  const [pendingUpload, setPendingUpload] = useState<File | undefined>();
   const [editing, setEditing] = useState<LibraryFile | undefined>();
   const [draftName, setDraftName] = useState('');
   const [draftDescription, setDraftDescription] = useState('');
+  const [draftLabel, setDraftLabel] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -51,7 +53,7 @@ export function FilesPage() {
 
   useEffect(() => { void load(); }, []);
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (file: File, label: string) => {
     setStatus(`Preparing ${file.name}…`);
     setProgress(0);
     try {
@@ -69,7 +71,7 @@ export function FilesPage() {
         if (!uploaded.ok) throw new Error('Cloudinary upload failed');
         const payload = await uploaded.json() as { public_id?: string; secure_url?: string; bytes?: number; format?: string };
         if (!payload.public_id || !payload.secure_url) throw new Error('Cloudinary returned incomplete metadata');
-        await dashboardRequest('/api/media', { method: 'POST', body: JSON.stringify({ name: file.name, publicId: payload.public_id, secureUrl: payload.secure_url, fileType: file.type || payload.format || 'FILE', fileSize: payload.bytes ?? file.size }) });
+        await dashboardRequest('/api/media', { method: 'POST', body: JSON.stringify({ name: file.name, label, publicId: payload.public_id, secureUrl: payload.secure_url, fileType: file.type || payload.format || 'FILE', fileSize: payload.bytes ?? file.size }) });
       } else {
         if (!session.uploadUrl || !session.uploadToken) throw new Error('Wix Media Manager resumable upload is unavailable');
         await new Promise<void>((resolve, reject) => {
@@ -88,7 +90,7 @@ export function FilesPage() {
         if (!finalized.ok) throw new Error('Wix Media Manager could not finalize the upload');
         const descriptor = await finalized.json() as { file?: { id?: string; url?: string; displayName?: string; sizeInBytes?: string } };
         if (!descriptor.file?.id || !descriptor.file.url) throw new Error('Wix returned incomplete file metadata');
-        await dashboardRequest('/api/media', { method: 'POST', body: JSON.stringify({ name: descriptor.file.displayName || file.name, mediaId: descriptor.file.id, url: descriptor.file.url, fileType: file.type || 'FILE', fileSize: Number(descriptor.file.sizeInBytes || file.size) }) });
+        await dashboardRequest('/api/media', { method: 'POST', body: JSON.stringify({ name: file.name, label, mediaId: descriptor.file.id, url: descriptor.file.url, fileType: file.type || 'FILE', fileSize: Number(descriptor.file.sizeInBytes || file.size) }) });
       }
       setProgress(100);
       setStatus(`${file.name} uploaded.`);
@@ -101,7 +103,7 @@ export function FilesPage() {
   const saveEdit = async () => {
     if (!editing?._id) return;
     try {
-      await dashboardRequest('/api/files', { method: 'PUT', body: JSON.stringify({ fileId: editing._id, name: draftName, description: draftDescription }) });
+      await dashboardRequest('/api/files', { method: 'PUT', body: JSON.stringify({ fileId: editing._id, name: draftName, label: draftLabel, description: draftDescription }) });
       setEditing(undefined);
       await load();
     } catch (reason) {
@@ -127,7 +129,7 @@ export function FilesPage() {
         description="Upload PDFs and other assets to the library, then assign them to products."
         actions={<Button type="button" onClick={() => inputRef.current?.click()}><Upload className="size-4" aria-hidden="true" />Upload file</Button>}
       />
-      <input ref={inputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadFile(file); event.target.value = ''; }} />
+      <input ref={inputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) { setPendingUpload(file); setDraftLabel(''); } event.target.value = ''; }} />
       <div className="grid gap-3 sm:grid-cols-3">
         <StatCard label="Files in this view" value={loading ? '—' : files.length} hint="Your reusable digital assets" icon={FileStack} />
         <StatCard label="Assigned to products" value={loading ? '—' : files.filter((file) => file.usedCount > 0).length} hint="Files linked to your catalog" icon={FileCheck2} tone="success" />
@@ -180,7 +182,7 @@ export function FilesPage() {
                   <TableCell className="text-muted-foreground">{formatDate(file.updatedAt ?? file.createdAt)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button type="button" size="sm" variant="outline" onClick={() => { setEditing(file); setDraftName(file.name); setDraftDescription(file.description ?? ''); }}>Edit</Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => { setEditing(file); setDraftName(file.name); setDraftLabel(file.label ?? ''); setDraftDescription(file.description ?? ''); }}>Edit</Button>
                       <Button type="button" size="sm" variant="destructive" onClick={() => setPendingDelete(file)}>Delete</Button>
                     </div>
                   </TableCell>
@@ -190,6 +192,19 @@ export function FilesPage() {
           </Table>
         </div>
       )}
+      <AlertDialog open={Boolean(pendingUpload)} onOpenChange={(open) => { if (!open) setPendingUpload(undefined); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Upload file</AlertDialogTitle>
+            <AlertDialogDescription>Choose the button label shown on product pages. Leave it blank to show Download.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2"><Label htmlFor="upload-label">Button label (optional)</Label><Input id="upload-label" value={draftLabel} onChange={(event) => setDraftLabel(event.target.value)} placeholder="Download guide" /></div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (pendingUpload) void uploadFile(pendingUpload, draftLabel.trim()); setPendingUpload(undefined); }}>Upload</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <AlertDialog open={Boolean(editing)} onOpenChange={(open) => { if (!open) setEditing(undefined); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -198,6 +213,7 @@ export function FilesPage() {
           </AlertDialogHeader>
           <div className="space-y-3">
             <div className="space-y-2"><Label htmlFor="file-name">Name</Label><Input id="file-name" value={draftName} onChange={(event) => setDraftName(event.target.value)} /></div>
+            <div className="space-y-2"><Label htmlFor="file-label">Button label</Label><Input id="file-label" value={draftLabel} onChange={(event) => setDraftLabel(event.target.value)} placeholder="Download" /></div>
             <div className="space-y-2"><Label htmlFor="file-description">Description</Label><Input id="file-description" value={draftDescription} onChange={(event) => setDraftDescription(event.target.value)} /></div>
           </div>
           <AlertDialogFooter>

@@ -61,6 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
       fileType: typeof body.fileType === 'string' ? body.fileType : 'FILE',
       fileSize: typeof body.fileSize === 'number' ? body.fileSize : 0,
       description: typeof body.description === 'string' ? body.description : '',
+      label: typeof body.label === 'string' ? body.label.trim() : '',
       storageProvider: settings.storageProvider,
       createdAt: new Date(),
       updatedAt: new Date(),

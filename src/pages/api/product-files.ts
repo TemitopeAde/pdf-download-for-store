@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ url }) => {
     const visibleOnly = url.searchParams.get('visibleOnly') === 'true';
     const mapped = files
       .filter((entry) => !visibleOnly || entry.isVisible !== false)
-      .map((entry) => ({ ...entry.file, fileId: entry.file._id ?? entry.fileId, assignmentId: entry._id, label: entry.label, description: entry.description, sortOrder: entry.sortOrder, isVisible: entry.isVisible, visibility: entry.visibility }));
+      .map((entry) => ({ ...entry.file, fileId: entry.file._id ?? entry.fileId, assignmentId: entry._id, label: entry.label?.trim() || entry.file.label, description: entry.description, sortOrder: entry.sortOrder, isVisible: entry.isVisible, visibility: entry.visibility }));
     return json(ok({ files: mapped, settings: { title: settings.title, buttonText: settings.buttonText, viewButtonText: settings.viewButtonText, showViewButton: settings.showViewButton } }));
   } catch (error) {
     console.error('Unable to retrieve product files', error);

@@ -31,12 +31,20 @@ export const GET: APIRoute = async ({ request, url }) => {
     const file = toFile(record);
     if (!productId) return json(fail('productId is required'), 400);
     const assignment = (await getProductFiles(productId)).find((entry) => entry.fileId === fileId);
+    console.info('[product-downloads] download authorization', {
+      productId,
+      fileId,
+      assignmentFound: Boolean(assignment),
+      visibility: assignment?.visibility ?? 'PUBLIC',
+    });
     if (assignment?.visibility === 'MEMBERS_ONLY') {
       const token = await auth.getTokenInfo();
       if (!token.active || token.subjectType !== 'MEMBER') return json(fail('Please log in to download this file'), 401);
     }
-    if (assignment?.visibility === 'PURCHASE_REQUIRED' && !(await currentMemberPurchasedProduct(productId))) {
-      return json(fail('Purchase the product to download this file'), 403);
+    if (assignment?.visibility === 'PURCHASE_REQUIRED') {
+      const purchased = await currentMemberPurchasedProduct(productId);
+      console.info('[product-downloads] purchase authorization result', { productId, fileId, purchased });
+      if (!purchased) return json(fail('Purchase the product to download this file'), 403);
     }
     if (settings.analyticsEnabled) {
       try {

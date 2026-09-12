@@ -33,7 +33,7 @@ export const POST: APIRoute = async ({ request }) => {
     const body = await readJson(request);
     const name = requiredString(body, 'name');
     const url = requiredString(body, 'url');
-    const file = await insertItem(COLLECTIONS.files, { name, url, mediaId: typeof body.mediaId === 'string' ? body.mediaId : '', fileType: typeof body.fileType === 'string' ? body.fileType : 'FILE', fileSize: typeof body.fileSize === 'number' ? body.fileSize : 0, description: typeof body.description === 'string' ? body.description : '', storageProvider: body.storageProvider === 'CLOUDINARY' ? 'CLOUDINARY' : 'WIX_MEDIA', externalId: typeof body.externalId === 'string' ? body.externalId : '', resourceType: typeof body.resourceType === 'string' ? body.resourceType : 'auto', createdAt: new Date(), updatedAt: new Date(), isActive: true });
+    const file = await insertItem(COLLECTIONS.files, { name, url, mediaId: typeof body.mediaId === 'string' ? body.mediaId : '', label: typeof body.label === 'string' ? body.label.trim() : '', fileType: typeof body.fileType === 'string' ? body.fileType : 'FILE', fileSize: typeof body.fileSize === 'number' ? body.fileSize : 0, description: typeof body.description === 'string' ? body.description : '', storageProvider: body.storageProvider === 'CLOUDINARY' ? 'CLOUDINARY' : 'WIX_MEDIA', externalId: typeof body.externalId === 'string' ? body.externalId : '', resourceType: typeof body.resourceType === 'string' ? body.resourceType : 'auto', createdAt: new Date(), updatedAt: new Date(), isActive: true });
     return json(ok(toFile(file)), 201);
   } catch (error) {
     console.error('Unable to save file', error);
@@ -52,6 +52,7 @@ export const PUT: APIRoute = async ({ request }) => {
       _id: existing._id,
       name: typeof body.name === 'string' && body.name.trim() ? body.name.trim() : existing.name,
       description: typeof body.description === 'string' ? body.description : existing.description,
+      label: typeof body.label === 'string' ? body.label.trim() : existing.label,
       updatedAt: new Date(),
     });
     return json(ok(toFile(updated)));
