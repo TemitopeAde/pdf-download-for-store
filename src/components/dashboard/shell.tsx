@@ -3,7 +3,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import type { PageKind } from './types';
 import { createUpgradeUrl, CURRENT_PLAN } from '@/lib/plans';
-import { LanguageSelector, useLocale, type TranslationKey } from '@/lib/i18n';
+import { LanguageSelector } from './language-selector';
+import { useLocale, type TranslationKey } from '@/lib/i18n';
 
 const navigation: Array<{ id: PageKind; labelKey: TranslationKey; icon: typeof Package }> = [
   { id: 'products', labelKey: 'products', icon: Package },
@@ -22,7 +23,7 @@ export function DashboardShell({ page, onNavigate, children }: { page: PageKind;
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r bg-white px-4 py-7 md:flex lg:w-64">
           <div className="mb-12 flex items-center gap-3 px-3">
             <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-white shadow-sm"><Download className="size-5" aria-hidden="true" /></span>
-            <div><p className="text-sm font-semibold tracking-tight">{t('productDownloads')}</p><p className="mt-0.5 text-xs text-muted-foreground">{t('Your digital asset workspace')}</p></div>
+            <div><p className="text-sm leading-tight font-semibold tracking-tight">{t('productDownloads')}</p><p className="mt-0.5 text-xs text-muted-foreground">{t('Your digital asset workspace')}</p></div>
           </div>
           <p className="mb-3 px-3 text-[10px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">{t('workspace')}</p>
           <nav className="space-y-1.5" aria-label={t('Dashboard')}>

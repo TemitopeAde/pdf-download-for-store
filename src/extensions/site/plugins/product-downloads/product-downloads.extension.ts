@@ -2,11 +2,11 @@ import { extensions } from '@wix/astro/builders'
 
 export default extensions.sitePlugin({
   id: 'ef31eec4-b1ad-4aa9-be57-4907a912e586',
-  name: 'Product Downloads',
+  name: 'PDF & File Download for Store',
   marketData: {
-    name: 'Product Downloads',
-    description: 'Marketing Description',
-    logoUrl: '{{BASE_URL}}/product-downloads-logo.svg',
+    name: 'PDF & File Download for Store',
+    description: 'Allow customers to download PDFs and files related to products.',
+    logoUrl: '{{BASE_URL}}/product-downloads-icon.png',
   },
   placements: [
     {

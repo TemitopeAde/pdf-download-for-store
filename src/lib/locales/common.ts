@@ -2,7 +2,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   en: {
     language: 'Language', workspace: 'Workspace', currentPlan: 'Current plan', needMoreDownloads: 'Need more downloads?',
     upgradePlan: 'Upgrade plan', openFileLibrary: 'Open file library', builtForWix: 'Built for your Wix store',
-    productDownloads: 'Product Downloads', products: 'Products', fileLibrary: 'File library', analytics: 'Analytics',
+    productDownloads: 'PDF & File Download for Store', products: 'Products', fileLibrary: 'File library', analytics: 'Analytics',
     pricingPlans: 'Pricing plans', settings: 'Settings', allProducts: 'All products', uploadFiles: 'Upload files',
     uploadFile: 'Upload file', refresh: 'Refresh', search: 'Search', cancel: 'Cancel', save: 'Save', remove: 'Remove',
     manage: 'Manage', assign: 'Assign', tryAgain: 'Try again', loading: 'Loading…', englishOnly: 'English only',
@@ -26,7 +26,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   es: {
     language: 'Idioma', workspace: 'Espacio de trabajo', currentPlan: 'Plan actual', needMoreDownloads: '¿Necesitas más descargas?',
     upgradePlan: 'Mejorar plan', openFileLibrary: 'Abrir biblioteca de archivos', builtForWix: 'Creado para tu tienda Wix',
-    productDownloads: 'Descargas de productos', products: 'Productos', fileLibrary: 'Biblioteca de archivos', analytics: 'Análisis',
+    productDownloads: 'PDF y descarga de archivos para tienda', products: 'Productos', fileLibrary: 'Biblioteca de archivos', analytics: 'Análisis',
     pricingPlans: 'Planes de precios', settings: 'Configuración', allProducts: 'Todos los productos', uploadFiles: 'Subir archivos',
     uploadFile: 'Subir archivo', refresh: 'Actualizar', search: 'Buscar', cancel: 'Cancelar', save: 'Guardar', remove: 'Eliminar',
     manage: 'Administrar', assign: 'Asignar', tryAgain: 'Intentar de nuevo', loading: 'Cargando…', englishOnly: 'Solo en inglés',
@@ -50,7 +50,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   'zh-CN': {
     language: '语言', workspace: '工作区', currentPlan: '当前套餐', needMoreDownloads: '需要更多下载次数？',
     upgradePlan: '升级套餐', openFileLibrary: '打开文件库', builtForWix: '专为您的 Wix 商店打造',
-    productDownloads: '商品下载', products: '商品', fileLibrary: '文件库', analytics: '数据分析',
+    productDownloads: '商店 PDF 与文件下载', products: '商品', fileLibrary: '文件库', analytics: '数据分析',
     pricingPlans: '价格套餐', settings: '设置', allProducts: '所有商品', uploadFiles: '上传多个文件',
     uploadFile: '上传文件', refresh: '刷新', search: '搜索', cancel: '取消', save: '保存', remove: '移除',
     manage: '管理', assign: '分配', tryAgain: '重试', loading: '加载中…', englishOnly: '仅限英语',
@@ -74,7 +74,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   hi: {
     language: 'भाषा', workspace: 'कार्यक्षेत्र', currentPlan: 'वर्तमान योजना', needMoreDownloads: 'और डाउनलोड चाहिए?',
     upgradePlan: 'योजना अपग्रेड करें', openFileLibrary: 'फ़ाइल संग्रह खोलें', builtForWix: 'आपके Wix स्टोर के लिए बनाया गया',
-    productDownloads: 'उत्पाद डाउनलोड', products: 'उत्पाद', fileLibrary: 'फ़ाइल संग्रह', analytics: 'विश्लेषण',
+    productDownloads: 'स्टोर के लिए PDF और फ़ाइल डाउनलोड', products: 'उत्पाद', fileLibrary: 'फ़ाइल संग्रह', analytics: 'विश्लेषण',
     pricingPlans: 'मूल्य योजनाएँ', settings: 'सेटिंग्स', allProducts: 'सभी उत्पाद', uploadFiles: 'फ़ाइलें अपलोड करें',
     uploadFile: 'फ़ाइल अपलोड करें', refresh: 'ताज़ा करें', search: 'खोजें', cancel: 'रद्द करें', save: 'सहेजें', remove: 'हटाएँ',
     manage: 'प्रबंधित करें', assign: 'जोड़ें', tryAgain: 'फिर से कोशिश करें', loading: 'लोड हो रहा है…', englishOnly: 'केवल अंग्रेज़ी',
@@ -98,7 +98,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   ar: {
     language: 'اللغة', workspace: 'مساحة العمل', currentPlan: 'الخطة الحالية', needMoreDownloads: 'هل تحتاج إلى مزيد من التنزيلات؟',
     upgradePlan: 'ترقية الخطة', openFileLibrary: 'فتح مكتبة الملفات', builtForWix: 'مصمم لمتجرك على Wix',
-    productDownloads: 'تنزيلات المنتجات', products: 'المنتجات', fileLibrary: 'مكتبة الملفات', analytics: 'التحليلات',
+    productDownloads: 'تنزيل ملفات PDF للمتجر', products: 'المنتجات', fileLibrary: 'مكتبة الملفات', analytics: 'التحليلات',
     pricingPlans: 'خطط الأسعار', settings: 'الإعدادات', allProducts: 'جميع المنتجات', uploadFiles: 'رفع ملفات',
     uploadFile: 'رفع ملف', refresh: 'تحديث', search: 'بحث', cancel: 'إلغاء', save: 'حفظ', remove: 'إزالة',
     manage: 'إدارة', assign: 'تعيين', tryAgain: 'المحاولة مجددًا', loading: 'جارٍ التحميل…', englishOnly: 'بالإنجليزية فقط',
@@ -122,7 +122,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   pt: {
     language: 'Idioma', workspace: 'Espaço de trabalho', currentPlan: 'Plano atual', needMoreDownloads: 'Precisa de mais transferências?',
     upgradePlan: 'Mudar para um plano superior', openFileLibrary: 'Abrir biblioteca de ficheiros', builtForWix: 'Criado para a sua loja Wix',
-    productDownloads: 'Transferências de produtos', products: 'Produtos', fileLibrary: 'Biblioteca de ficheiros', analytics: 'Análises',
+    productDownloads: 'Download de PDF e ficheiros para loja', products: 'Produtos', fileLibrary: 'Biblioteca de ficheiros', analytics: 'Análises',
     pricingPlans: 'Planos de preços', settings: 'Definições', allProducts: 'Todos os produtos', uploadFiles: 'Carregar ficheiros',
     uploadFile: 'Carregar ficheiro', refresh: 'Atualizar', search: 'Pesquisar', cancel: 'Cancelar', save: 'Guardar', remove: 'Remover',
     manage: 'Gerir', assign: 'Associar', tryAgain: 'Tentar novamente', loading: 'A carregar…', englishOnly: 'Apenas em inglês',
@@ -146,7 +146,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   fr: {
     language: 'Langue', workspace: 'Espace de travail', currentPlan: 'Forfait actuel', needMoreDownloads: 'Besoin de plus de téléchargements ?',
     upgradePlan: 'Passer au forfait supérieur', openFileLibrary: 'Ouvrir la bibliothèque de fichiers', builtForWix: 'Conçu pour votre boutique Wix',
-    productDownloads: 'Téléchargements de produits', products: 'Produits', fileLibrary: 'Bibliothèque de fichiers', analytics: 'Statistiques',
+    productDownloads: 'Téléchargement PDF et fichiers pour boutique', products: 'Produits', fileLibrary: 'Bibliothèque de fichiers', analytics: 'Statistiques',
     pricingPlans: 'Forfaits', settings: 'Paramètres', allProducts: 'Tous les produits', uploadFiles: 'Importer des fichiers',
     uploadFile: 'Importer un fichier', refresh: 'Actualiser', search: 'Rechercher', cancel: 'Annuler', save: 'Enregistrer', remove: 'Supprimer',
     manage: 'Gérer', assign: 'Associer', tryAgain: 'Réessayer', loading: 'Chargement…', englishOnly: 'En anglais uniquement',
@@ -170,7 +170,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   bn: {
     language: 'ভাষা', workspace: 'কর্মক্ষেত্র', currentPlan: 'বর্তমান পরিকল্পনা', needMoreDownloads: 'আরও ডাউনলোড প্রয়োজন?',
     upgradePlan: 'উন্নত পরিকল্পনা নিন', openFileLibrary: 'ফাইল সংগ্রহ খুলুন', builtForWix: 'আপনার Wix দোকানের জন্য তৈরি',
-    productDownloads: 'পণ্যের ডাউনলোড', products: 'পণ্য', fileLibrary: 'ফাইল সংগ্রহ', analytics: 'বিশ্লেষণ',
+    productDownloads: 'স্টোরের জন্য PDF ও ফাইল ডাউনলোড', products: 'পণ্য', fileLibrary: 'ফাইল সংগ্রহ', analytics: 'বিশ্লেষণ',
     pricingPlans: 'মূল্য পরিকল্পনা', settings: 'সেটিংস', allProducts: 'সব পণ্য', uploadFiles: 'ফাইলগুলো আপলোড করুন',
     uploadFile: 'ফাইল আপলোড করুন', refresh: 'রিফ্রেশ করুন', search: 'খুঁজুন', cancel: 'বাতিল করুন', save: 'সংরক্ষণ করুন', remove: 'সরান',
     manage: 'পরিচালনা করুন', assign: 'যুক্ত করুন', tryAgain: 'আবার চেষ্টা করুন', loading: 'লোড হচ্ছে…', englishOnly: 'শুধু ইংরেজি',
@@ -194,7 +194,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   ru: {
     language: 'Язык', workspace: 'Рабочая область', currentPlan: 'Текущий тариф', needMoreDownloads: 'Нужно больше скачиваний?',
     upgradePlan: 'Повысить тариф', openFileLibrary: 'Открыть библиотеку файлов', builtForWix: 'Создано для вашего магазина Wix',
-    productDownloads: 'Скачивания товаров', products: 'Товары', fileLibrary: 'Библиотека файлов', analytics: 'Аналитика',
+    productDownloads: 'Загрузка PDF и файлов для магазина', products: 'Товары', fileLibrary: 'Библиотека файлов', analytics: 'Аналитика',
     pricingPlans: 'Тарифы', settings: 'Настройки', allProducts: 'Все товары', uploadFiles: 'Загрузить файлы',
     uploadFile: 'Загрузить файл', refresh: 'Обновить', search: 'Поиск', cancel: 'Отмена', save: 'Сохранить', remove: 'Удалить',
     manage: 'Управление', assign: 'Привязать', tryAgain: 'Повторить попытку', loading: 'Загрузка…', englishOnly: 'Только на английском',
@@ -218,7 +218,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   ur: {
     language: 'زبان', workspace: 'کام کی جگہ', currentPlan: 'موجودہ منصوبہ', needMoreDownloads: 'مزید ڈاؤن لوڈز درکار ہیں؟',
     upgradePlan: 'بہتر منصوبہ اختیار کریں', openFileLibrary: 'فائلوں کا ذخیرہ کھولیں', builtForWix: 'آپ کے Wix اسٹور کے لیے بنایا گیا',
-    productDownloads: 'مصنوعات کے ڈاؤن لوڈز', products: 'مصنوعات', fileLibrary: 'فائلوں کا ذخیرہ', analytics: 'تجزیات',
+    productDownloads: 'اسٹور کے لیے PDF اور فائل ڈاؤن لوڈ', products: 'مصنوعات', fileLibrary: 'فائلوں کا ذخیرہ', analytics: 'تجزیات',
     pricingPlans: 'قیمت کے منصوبے', settings: 'ترتیبات', allProducts: 'تمام مصنوعات', uploadFiles: 'فائلیں اپ لوڈ کریں',
     uploadFile: 'فائل اپ لوڈ کریں', refresh: 'تازہ کریں', search: 'تلاش کریں', cancel: 'منسوخ کریں', save: 'محفوظ کریں', remove: 'ہٹائیں',
     manage: 'انتظام کریں', assign: 'منسلک کریں', tryAgain: 'دوبارہ کوشش کریں', loading: 'لوڈ ہو رہا ہے…', englishOnly: 'صرف انگریزی',
@@ -242,7 +242,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   id: {
     language: 'Bahasa', workspace: 'Ruang kerja', currentPlan: 'Paket saat ini', needMoreDownloads: 'Butuh lebih banyak unduhan?',
     upgradePlan: 'Tingkatkan paket', openFileLibrary: 'Buka pustaka berkas', builtForWix: 'Dibuat untuk toko Wix Anda',
-    productDownloads: 'Unduhan produk', products: 'Produk', fileLibrary: 'Pustaka berkas', analytics: 'Analitik',
+    productDownloads: 'Unduhan PDF & File untuk Toko', products: 'Produk', fileLibrary: 'Pustaka berkas', analytics: 'Analitik',
     pricingPlans: 'Paket harga', settings: 'Pengaturan', allProducts: 'Semua produk', uploadFiles: 'Unggah beberapa berkas',
     uploadFile: 'Unggah berkas', refresh: 'Segarkan', search: 'Cari', cancel: 'Batal', save: 'Simpan', remove: 'Hapus',
     manage: 'Kelola', assign: 'Kaitkan', tryAgain: 'Coba lagi', loading: 'Memuat…', englishOnly: 'Hanya bahasa Inggris',
@@ -266,7 +266,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   de: {
     language: 'Sprache', workspace: 'Arbeitsbereich', currentPlan: 'Aktueller Tarif', needMoreDownloads: 'Mehr Downloads benötigt?',
     upgradePlan: 'Höheren Tarif wählen', openFileLibrary: 'Dateibibliothek öffnen', builtForWix: 'Für deinen Wix-Shop entwickelt',
-    productDownloads: 'Produktdownloads', products: 'Produkte', fileLibrary: 'Dateibibliothek', analytics: 'Analysen',
+    productDownloads: 'PDF- und Datei-Download für Shops', products: 'Produkte', fileLibrary: 'Dateibibliothek', analytics: 'Analysen',
     pricingPlans: 'Tarife', settings: 'Einstellungen', allProducts: 'Alle Produkte', uploadFiles: 'Dateien hochladen',
     uploadFile: 'Datei hochladen', refresh: 'Aktualisieren', search: 'Suchen', cancel: 'Abbrechen', save: 'Speichern', remove: 'Entfernen',
     manage: 'Verwalten', assign: 'Zuordnen', tryAgain: 'Erneut versuchen', loading: 'Wird geladen…', englishOnly: 'Nur auf Englisch',
@@ -290,7 +290,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   ja: {
     language: '言語', workspace: 'ワークスペース', currentPlan: '現在のプラン', needMoreDownloads: 'ダウンロード回数を増やしますか？',
     upgradePlan: 'プランをアップグレード', openFileLibrary: 'ファイルライブラリを開く', builtForWix: 'Wix ストアのために開発',
-    productDownloads: '商品ダウンロード', products: '商品', fileLibrary: 'ファイルライブラリ', analytics: '分析',
+    productDownloads: 'ストア向け PDF / ファイルダウンロード', products: '商品', fileLibrary: 'ファイルライブラリ', analytics: '分析',
     pricingPlans: '料金プラン', settings: '設定', allProducts: 'すべての商品', uploadFiles: '複数のファイルをアップロード',
     uploadFile: 'ファイルをアップロード', refresh: '更新', search: '検索', cancel: 'キャンセル', save: '保存', remove: '削除',
     manage: '管理', assign: '割り当て', tryAgain: '再試行', loading: '読み込み中…', englishOnly: '英語のみ',
@@ -314,7 +314,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   pcm: {
     language: 'Language', workspace: 'Where you dey work', currentPlan: 'Plan wey you dey use', needMoreDownloads: 'You need more downloads?',
     upgradePlan: 'Move to bigger plan', openFileLibrary: 'Open where files dey', builtForWix: 'We build am for your Wix store',
-    productDownloads: 'Product downloads', products: 'Things wey you dey sell', fileLibrary: 'Where files dey', analytics: 'Download breakdown',
+    productDownloads: 'PDF & File Download for Store', products: 'Things wey you dey sell', fileLibrary: 'Where files dey', analytics: 'Download breakdown',
     pricingPlans: 'Plans and their prices', settings: 'Settings', allProducts: 'All things wey you dey sell', uploadFiles: 'Upload files',
     uploadFile: 'Upload file', refresh: 'Load am again', search: 'Find am', cancel: 'Cancel am', save: 'Save am', remove: 'Comot am',
     manage: 'Manage am', assign: 'Link am', tryAgain: 'Try am again', loading: 'E dey load…', englishOnly: 'Na only English',
@@ -338,7 +338,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   mr: {
     language: 'भाषा', workspace: 'कार्यक्षेत्र', currentPlan: 'सध्याची योजना', needMoreDownloads: 'आणखी डाउनलोड हवे आहेत?',
     upgradePlan: 'उच्च योजना घ्या', openFileLibrary: 'फाइल संग्रह उघडा', builtForWix: 'तुमच्या Wix दुकानासाठी तयार केलेले',
-    productDownloads: 'उत्पादनांचे डाउनलोड', products: 'उत्पादने', fileLibrary: 'फाइल संग्रह', analytics: 'विश्लेषण',
+    productDownloads: 'स्टोअरसाठी PDF आणि फाइल डाउनलोड', products: 'उत्पादने', fileLibrary: 'फाइल संग्रह', analytics: 'विश्लेषण',
     pricingPlans: 'दर योजना', settings: 'सेटिंग्ज', allProducts: 'सर्व उत्पादने', uploadFiles: 'फाइल्स अपलोड करा',
     uploadFile: 'फाइल अपलोड करा', refresh: 'पुन्हा लोड करा', search: 'शोधा', cancel: 'रद्द करा', save: 'जतन करा', remove: 'काढा',
     manage: 'व्यवस्थापित करा', assign: 'जोडा', tryAgain: 'पुन्हा प्रयत्न करा', loading: 'लोड होत आहे…', englishOnly: 'फक्त इंग्रजी',
@@ -362,7 +362,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   te: {
     language: 'భాష', workspace: 'కార్యస్థలం', currentPlan: 'ప్రస్తుత పథకం', needMoreDownloads: 'మరిన్ని డౌన్‌లోడ్‌లు కావాలా?',
     upgradePlan: 'ఉన్నత పథకానికి మారండి', openFileLibrary: 'ఫైళ్ల భాండాగారాన్ని తెరవండి', builtForWix: 'మీ Wix దుకాణం కోసం రూపొందించబడింది',
-    productDownloads: 'ఉత్పత్తుల డౌన్‌లోడ్‌లు', products: 'ఉత్పత్తులు', fileLibrary: 'ఫైళ్ల భాండాగారం', analytics: 'విశ్లేషణలు',
+    productDownloads: 'స్టోర్ కోసం PDF & ఫైల్ డౌన్‌లోడ్', products: 'ఉత్పత్తులు', fileLibrary: 'ఫైళ్ల భాండాగారం', analytics: 'విశ్లేషణలు',
     pricingPlans: 'ధరల పథకాలు', settings: 'సెట్టింగ్‌లు', allProducts: 'అన్ని ఉత్పత్తులు', uploadFiles: 'ఫైళ్లను అప్‌లోడ్ చేయండి',
     uploadFile: 'ఫైల్‌ను అప్‌లోడ్ చేయండి', refresh: 'మళ్లీ లోడ్ చేయండి', search: 'వెతకండి', cancel: 'రద్దు చేయండి', save: 'భద్రపరచండి', remove: 'తొలగించండి',
     manage: 'నిర్వహించండి', assign: 'జతచేయండి', tryAgain: 'మళ్లీ ప్రయత్నించండి', loading: 'లోడ్ అవుతోంది…', englishOnly: 'ఆంగ్లంలో మాత్రమే',
@@ -386,7 +386,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   tr: {
     language: 'Dil', workspace: 'Çalışma alanı', currentPlan: 'Mevcut plan', needMoreDownloads: 'Daha fazla indirme mi gerekiyor?',
     upgradePlan: 'Planı yükselt', openFileLibrary: 'Dosya kitaplığını aç', builtForWix: 'Wix mağazanız için tasarlandı',
-    productDownloads: 'Ürün indirmeleri', products: 'Ürünler', fileLibrary: 'Dosya kitaplığı', analytics: 'Analizler',
+    productDownloads: 'Mağaza için PDF ve Dosya İndirme', products: 'Ürünler', fileLibrary: 'Dosya kitaplığı', analytics: 'Analizler',
     pricingPlans: 'Fiyatlandırma planları', settings: 'Ayarlar', allProducts: 'Tüm ürünler', uploadFiles: 'Dosyaları yükle',
     uploadFile: 'Dosya yükle', refresh: 'Yenile', search: 'Ara', cancel: 'İptal', save: 'Kaydet', remove: 'Kaldır',
     manage: 'Yönet', assign: 'Ata', tryAgain: 'Tekrar dene', loading: 'Yükleniyor…', englishOnly: 'Yalnızca İngilizce',
@@ -410,7 +410,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   ta: {
     language: 'மொழி', workspace: 'பணியிடம்', currentPlan: 'தற்போதைய திட்டம்', needMoreDownloads: 'மேலும் பதிவிறக்கங்கள் வேண்டுமா?',
     upgradePlan: 'திட்டத்தை மேம்படுத்தவும்', openFileLibrary: 'கோப்பு நூலகத்தைத் திறக்கவும்', builtForWix: 'உங்கள் Wix கடைக்காக உருவாக்கப்பட்டது',
-    productDownloads: 'தயாரிப்புப் பதிவிறக்கங்கள்', products: 'தயாரிப்புகள்', fileLibrary: 'கோப்பு நூலகம்', analytics: 'பகுப்பாய்வு',
+    productDownloads: 'கடைக்கான PDF மற்றும் கோப்புப் பதிவிறக்கம்', products: 'தயாரிப்புகள்', fileLibrary: 'கோப்பு நூலகம்', analytics: 'பகுப்பாய்வு',
     pricingPlans: 'விலைத் திட்டங்கள்', settings: 'அமைப்புகள்', allProducts: 'அனைத்துத் தயாரிப்புகள்', uploadFiles: 'கோப்புகளைப் பதிவேற்றவும்',
     uploadFile: 'கோப்பைப் பதிவேற்றவும்', refresh: 'புதுப்பிக்கவும்', search: 'தேடவும்', cancel: 'ரத்துசெய்யவும்', save: 'சேமிக்கவும்', remove: 'அகற்றவும்',
     manage: 'நிர்வகிக்கவும்', assign: 'இணைக்கவும்', tryAgain: 'மீண்டும் முயலவும்', loading: 'ஏற்றப்படுகிறது…', englishOnly: 'ஆங்கிலம் மட்டும்',
@@ -434,7 +434,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   vi: {
     language: 'Ngôn ngữ', workspace: 'Không gian làm việc', currentPlan: 'Gói hiện tại', needMoreDownloads: 'Cần thêm lượt tải xuống?',
     upgradePlan: 'Nâng cấp gói', openFileLibrary: 'Mở thư viện tệp', builtForWix: 'Được tạo cho cửa hàng Wix của bạn',
-    productDownloads: 'Lượt tải xuống sản phẩm', products: 'Sản phẩm', fileLibrary: 'Thư viện tệp', analytics: 'Phân tích',
+    productDownloads: 'Tải PDF và tệp cho cửa hàng', products: 'Sản phẩm', fileLibrary: 'Thư viện tệp', analytics: 'Phân tích',
     pricingPlans: 'Các gói dịch vụ', settings: 'Cài đặt', allProducts: 'Tất cả sản phẩm', uploadFiles: 'Tải các tệp lên',
     uploadFile: 'Tải tệp lên', refresh: 'Làm mới', search: 'Tìm kiếm', cancel: 'Hủy', save: 'Lưu', remove: 'Xóa',
     manage: 'Quản lý', assign: 'Gán', tryAgain: 'Thử lại', loading: 'Đang tải…', englishOnly: 'Chỉ có tiếng Anh',
@@ -458,7 +458,7 @@ export const commonTranslations: Record<string, Record<string, string>> = {
   ko: {
     language: '언어', workspace: '작업 공간', currentPlan: '현재 요금제', needMoreDownloads: '다운로드 횟수가 더 필요하신가요?',
     upgradePlan: '요금제 업그레이드', openFileLibrary: '파일 라이브러리 열기', builtForWix: 'Wix 스토어를 위해 제작',
-    productDownloads: '제품 다운로드', products: '제품', fileLibrary: '파일 라이브러리', analytics: '분석',
+    productDownloads: '스토어용 PDF 및 파일 다운로드', products: '제품', fileLibrary: '파일 라이브러리', analytics: '분석',
     pricingPlans: '요금제', settings: '설정', allProducts: '모든 제품', uploadFiles: '여러 파일 업로드',
     uploadFile: '파일 업로드', refresh: '새로 고침', search: '검색', cancel: '취소', save: '저장', remove: '삭제',
     manage: '관리', assign: '연결', tryAgain: '다시 시도', loading: '불러오는 중…', englishOnly: '영어만 지원',
