@@ -41,6 +41,54 @@ test('literal translation calls in every dashboard component have dictionary ent
   }
 });
 
+test('dashboard chrome such as catalog, search, sort, and manage is translated', () => {
+  const samples = {
+    es: {
+      'Product catalog': 'Catálogo de productos',
+      'Search products': 'Buscar productos',
+      'Sort products': 'Ordenar productos',
+      Manage: 'Administrar',
+      Search: 'Buscar',
+      'Search files': 'Buscar archivos',
+      'Drop files here': 'Suelta los archivos aquí',
+      fileLibrary: 'Biblioteca de archivos',
+      analytics: 'Análisis',
+      settings: 'Configuración',
+      cancel: 'Cancelar',
+      save: 'Guardar',
+      remove: 'Eliminar',
+      refresh: 'Actualizar',
+      download: 'Descargar',
+      pluginIntro: 'Cada archivo asignado aparece como un botón. Define su etiqueta al asignarlo o subirlo; si no hay etiqueta, el botón dice Descargar.',
+    },
+    fr: {
+      'Product catalog': 'Catalogue de produits',
+      'Search products': 'Rechercher des produits',
+      'Sort products': 'Trier les produits',
+    },
+    de: {
+      'Product catalog': 'Produktkatalog',
+      'Search products': 'Produkte suchen',
+      'Sort products': 'Produkte sortieren',
+    },
+    'zh-CN': {
+      'Product catalog': '商品目录',
+      'Search products': '搜索商品',
+      'Sort products': '排序商品',
+    },
+  };
+  for (const [locale, expected] of Object.entries(samples)) {
+    for (const [key, value] of Object.entries(expected)) {
+      assert.equal(translate(key, locale), value, `${locale} ${key}`);
+    }
+  }
+  assert.notEqual(translate('Search by product name…', 'es'), 'Search by product name…');
+  assert.notEqual(translate('Manage files', 'ja'), 'Manage files');
+  assert.notEqual(translate('Search files', 'de'), 'Search files');
+  assert.notEqual(translate('settings', 'fr'), 'Settings');
+  assert.equal(translate('downloadNamed', 'es', { name: 'guide.pdf' }), 'Descargar guide.pdf');
+});
+
 test('fallbacks are readable and interpolation never interprets user content', () => {
   assert.equal(translate('Unknown server error', 'es'), 'Unknown server error');
   assert.equal(translate('Files: {{count}}', 'en', { count: 5 }), 'Files: 5');

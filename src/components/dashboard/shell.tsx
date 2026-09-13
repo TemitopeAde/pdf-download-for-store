@@ -42,7 +42,7 @@ export function DashboardShell({ page, onNavigate, children }: { page: PageKind;
           <div className="mt-4 rounded-xl border border-primary/15 bg-primary/[0.025] p-4">
             <div className="flex items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground">{t('currentPlan')}</p>
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">{CURRENT_PLAN}</span>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">{t(CURRENT_PLAN)}</span>
             </div>
             <p className="mt-2 text-sm font-semibold">{t('needMoreDownloads')}</p>
             <a href={createUpgradeUrl()} target="_blank" rel="noreferrer" className="mt-3 flex items-center gap-2 text-xs font-semibold text-primary hover:underline">{t('upgradePlan')} <ArrowUpRight className="size-3.5" aria-hidden="true" /></a>

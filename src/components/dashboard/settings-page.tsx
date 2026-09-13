@@ -54,7 +54,7 @@ export function SettingsPage() {
     return (
       <div className="space-y-6" aria-busy="true" aria-live="polite">
         <Toaster />
-        <PageHeader title={t('Settings')} description={t('Choose where files live, who can download them, and the defaults for new product-page widgets.')} />
+        <PageHeader title={t('settings')} description={t('settingsDescription')} />
         <Card>
           <CardHeader><Skeleton className="h-5 w-32" /><Skeleton className="h-4 w-80 max-w-full" /></CardHeader>
           <CardContent className="space-y-5"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></CardContent>
@@ -67,8 +67,8 @@ export function SettingsPage() {
     <div className="space-y-6">
       <Toaster />
       <PageHeader
-        title={t('Settings')}
-        description={t('Choose where files live, who can download them, and the defaults for new product-page widgets.')}
+        title={t('settings')}
+        description={t('settingsDescription')}
         actions={<Button type="button" disabled={saving} onClick={() => void save()}>{saving ? t('Saving…') : t('Save settings')}</Button>}
       />
       <Tabs defaultValue="storage" className="space-y-4">

@@ -8,6 +8,7 @@ export const COLLECTIONS = {
   assignmentRules: '@admin14744/pdf-download-for-store/assignment-rules',
   downloadEvents: '@admin14744/pdf-download-for-store/download-events',
   settings: '@admin14744/pdf-download-for-store/app-settings',
+  lifecycleEvents: '@admin14744/pdf-download-for-store/lifecycle-events',
 } as const;
 
 type DataRecord = Record<string, unknown> & { _id?: string };

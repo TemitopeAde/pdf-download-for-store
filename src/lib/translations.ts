@@ -15,9 +15,18 @@ export type TranslationKey = string;
 export type TranslationVariables = Record<string, string | number>;
 export const isLocale = (value: string): value is Locale => SUPPORTED_LANGUAGES.some(([code]) => code === value);
 export const localeDirection = (locale: Locale): 'rtl' | 'ltr' => locale === 'ar' || locale === 'ur' ? 'rtl' : 'ltr';
+const translatedOnly = (english: Record<string, string>, messages: Record<string, string> | undefined, locale: string) =>
+  locale === 'en' || !messages ? messages ?? english : Object.fromEntries(Object.entries(messages).filter(([key, value]) => value !== english[key]));
+
 export const dictionaries = Object.fromEntries(SUPPORTED_LANGUAGES.map(([locale]) => [locale, {
+  ...productTranslations.en,
+  ...fileTranslations.en,
+  ...settingsTranslations.en,
   ...Object.fromEntries(Object.entries(commonTranslations.en).map(([key, english]) => [english, commonTranslations[locale]?.[key] ?? english])),
-  ...commonTranslations[locale], ...productTranslations[locale], ...fileTranslations[locale], ...settingsTranslations[locale],
+  ...commonTranslations[locale],
+  ...translatedOnly(productTranslations.en, productTranslations[locale], locale),
+  ...translatedOnly(fileTranslations.en, fileTranslations[locale], locale),
+  ...translatedOnly(settingsTranslations.en, settingsTranslations[locale], locale),
 }])) as Record<Locale, Record<string, string>>;
 
 const errorAliases: Record<string, string> = {
@@ -32,6 +41,7 @@ const errorAliases: Record<string, string> = {
   'Unable to remove product file assignment': 'Unable to remove file',
   'Global product assignments require the Pro plan or higher': 'globalAssignmentLocked',
   'Analytics require the Pro plan or higher': 'analyticsLockedDescription',
+  'Unable to download this file': 'unableToDownload',
 };
 const quotaMessages = [
   { pattern: /^Your (.+) plan allows up to (\d+) files\. Upgrade to add more\.$/, key: 'Your {{plan}} plan allows up to {{count}} files. Upgrade to add more.' },

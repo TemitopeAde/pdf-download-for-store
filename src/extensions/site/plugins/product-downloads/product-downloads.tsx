@@ -2,6 +2,8 @@ import { httpClient } from '@wix/essentials';
 import { createRoot, type Root } from 'react-dom/client';
 import { toast, Toaster } from 'sonner';
 import 'sonner/dist/styles.css';
+import { localeFromDocument } from '../../../../lib/detect-locale';
+import { translate } from '../../../../lib/translations';
 
 interface ProductDownload {
   fileId: string;
@@ -92,9 +94,12 @@ function renderFormatIcon(file: ProductDownload): string {
   return `<svg width="28" height="32" viewBox="0 0 28 32" style="flex-shrink:0" aria-hidden="true" focusable="false"><path d="M4 0h14l10 10v18a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4Z" fill="${color}"/><path d="M18 0v7a3 3 0 0 0 3 3h7Z" fill="#fff" fill-opacity=".3"/><text x="14" y="24" text-anchor="middle" style="font:700 8px Arial,sans-serif;fill:#fff">${label}</text></svg>`;
 }
 
-function renderFile(file: ProductDownload, labelColor: string): string {
-  const buttonText = file.label?.trim() || 'Download';
-  const accessibleLabel = /^download\b/i.test(buttonText) && buttonText !== 'Download' ? buttonText : `Download ${file.label?.trim() || file.name}`;
+function renderFile(file: ProductDownload, labelColor: string, locale: ReturnType<typeof localeFromDocument>): string {
+  const defaultLabel = translate('download', locale);
+  const buttonText = file.label?.trim() || defaultLabel;
+  const accessibleLabel = buttonText === defaultLabel || /^download\b/i.test(buttonText)
+    ? translate('downloadNamed', locale, { name: file.label?.trim() || file.name })
+    : buttonText;
   return `<button type="button" data-action="download" data-file-id="${escapeHtml(file.fileId)}" aria-label="${escapeHtml(accessibleLabel)}" style="display:inline-flex;align-items:center;gap:8px;max-width:100%;border:0;border-radius:4px;cursor:pointer;color:${sanitizeColor(labelColor)}">${renderFormatIcon(file)}<span style="min-width:0;overflow-wrap:anywhere;text-align:start">${escapeHtml(buttonText)}</span><svg width="16" height="16" style="margin-left:auto;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg><span class="product-downloads-button-spinner" aria-hidden="true"></span></button>`;
 }
 
@@ -132,7 +137,7 @@ class ProductDownloadsElement extends HTMLElement {
   }
 
   private renderLoadingButton() {
-    this.innerHTML = `<div class="product-downloads-loading" role="status" aria-label="Loading downloads"><span></span><span></span><span></span></div><style>
+    this.innerHTML = `<div class="product-downloads-loading" role="status" aria-label="${translate('loadingDownloads', localeFromDocument())}"><span></span><span></span><span></span></div><style>
       .product-downloads-loading {
         display: inline-flex;
         align-items: center;
@@ -180,6 +185,7 @@ class ProductDownloadsElement extends HTMLElement {
   }
 
   private render(productId: string, files: ProductDownload[]) {
+    const locale = localeFromDocument();
     const layout = this.getAttribute('layout') === 'ROW' ? 'row' : 'column';
     const listStyle = `display:flex;flex-direction:${layout};align-items:flex-start;gap:8px;`;
     const labelFont = fontValueFromAttribute(this.getAttribute('label-font'));
@@ -199,7 +205,7 @@ class ProductDownloadsElement extends HTMLElement {
       @keyframes product-downloads-button-spinner-animation {
         to { transform: rotate(360deg); }
       }
-    </style><div style="${listStyle}">${files.map((file) => renderFile(file, labelColor)).join('')}</div>`;
+    </style><div style="${listStyle}">${files.map((file) => renderFile(file, labelColor, locale)).join('')}</div>`;
     this.querySelectorAll<HTMLButtonElement>('button[data-action="download"]').forEach((button) => {
       applyFont(button, labelFont);
       button.addEventListener('click', () => void this.openFile(productId, button.dataset.fileId || '', button));
@@ -217,9 +223,9 @@ class ProductDownloadsElement extends HTMLElement {
     try {
       const payload = await requestDownloadApi(`/api/downloads?fileId=${encodeURIComponent(fileId)}&productId=${encodeURIComponent(productId)}`);
       if (!payload.success || !payload.data?.url) {
-        const message = payload.errorMessage || 'Unable to download this file';
+        const message = payload.errorMessage || translate('unableToDownload', localeFromDocument());
         console.warn(message);
-        toast.error(message);
+        toast.error(translate(message, localeFromDocument()));
         return;
       }
       const anchor = document.createElement('a');
@@ -228,7 +234,7 @@ class ProductDownloadsElement extends HTMLElement {
       anchor.click();
     } catch (error) {
       console.error('Unable to open product download', error);
-      toast.error(error instanceof Error ? error.message : 'Unable to download this file');
+      toast.error(translate(error instanceof Error ? error.message : 'unableToDownload', localeFromDocument()));
     } finally {
       if (trigger) {
         trigger.disabled = false;

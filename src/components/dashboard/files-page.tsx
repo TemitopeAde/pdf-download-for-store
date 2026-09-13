@@ -170,9 +170,9 @@ export function FilesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={t('File library')}
-        description={t('Upload PDFs and other assets to the library, then assign them to products.')}
-        actions={<Button type="button" disabled={plan.maxFiles !== null && files.length + pendingUploads.length >= plan.maxFiles} onClick={() => { console.info('[pdf-downloads] header picker clicked', { inputAvailable: Boolean(inputRef.current) }); inputRef.current?.click(); }}><Upload className="size-4" aria-hidden="true" />{t('Upload file')}</Button>}
+        title={t('fileLibrary')}
+        description={t('filesDescription')}
+        actions={<Button type="button" disabled={plan.maxFiles !== null && files.length + pendingUploads.length >= plan.maxFiles} onClick={() => { console.info('[pdf-downloads] header picker clicked', { inputAvailable: Boolean(inputRef.current) }); inputRef.current?.click(); }}><Upload className="size-4" aria-hidden="true" />{t('uploadFile')}</Button>}
       />
       <input id="upload-files" ref={inputRef} aria-label={t('Choose files to upload')} type="file" multiple className="sr-only" onChange={(event) => { console.info('[pdf-downloads] file input changed', { count: event.target.files?.length ?? 0 }); if (event.target.files) queueFiles(event.target.files); event.target.value = ''; }} />
       <div className="grid gap-3 sm:grid-cols-3">
@@ -197,7 +197,7 @@ export function FilesPage() {
             onDrop={(event) => { event.preventDefault(); console.info('[pdf-downloads] files dropped', { count: event.dataTransfer.files.length }); queueFiles(event.dataTransfer.files); }}
           >
             <p className="text-sm font-medium">{t("Drop files here")}</p>
-            <p className="text-xs text-muted-foreground">{plan.maxFiles === null ? t('Upload multiple PDFs, ZIPs, or guides at once.') : t('{{count}} of {{limit}} files used on the {{plan}} plan.', { count: files.length, limit: plan.maxFiles, plan: plan.name })}</p>
+            <p className="text-xs text-muted-foreground">{plan.maxFiles === null ? t('Upload multiple PDFs, ZIPs, or guides at once.') : t('{{count}} of {{limit}} files used on the {{plan}} plan.', { count: files.length, limit: plan.maxFiles, plan: t(plan.name) })}</p>
             <Button asChild type="button" variant="outline">
               <label htmlFor="upload-files" onClick={(event) => { event.preventDefault(); event.stopPropagation(); console.info('[pdf-downloads] choose files clicked', { inputAvailable: Boolean(inputRef.current) }); inputRef.current?.click(); }}>{t("Choose files")}</label>
             </Button>
@@ -214,7 +214,7 @@ export function FilesPage() {
       </Card>
       <div className="flex gap-2">
         <Input aria-label={t("Search files")} placeholder={t("Search files")} value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void load(); }} />
-        <Button type="button" variant="outline" onClick={() => void load()}>{t("Search")}</Button>
+        <Button type="button" variant="outline" onClick={() => void load()}>{t('search')}</Button>
       </div>
       {error ? <ErrorBanner message={error} onRetry={() => void load()} /> : null}
       {loading ? <TableSkeleton /> : files.length === 0 ? (
@@ -268,7 +268,7 @@ export function FilesPage() {
             ))}
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={() => void uploadQueuedFiles()}>{t("Upload")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -285,8 +285,8 @@ export function FilesPage() {
             <div className="space-y-2"><Label htmlFor="file-description">{t("Description")}</Label><Input id="file-description" value={draftDescription} onChange={(event) => setDraftDescription(event.target.value)} /></div>
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void saveEdit()}>{t("Save")}</AlertDialogAction>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void saveEdit()}>{t('save')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -297,7 +297,7 @@ export function FilesPage() {
             <AlertDialogDescription>{t("This removes the file from the library. Product assignments that use it will no longer resolve.")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction variant="destructive" onClick={() => void confirmDelete()}>{t("Delete")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

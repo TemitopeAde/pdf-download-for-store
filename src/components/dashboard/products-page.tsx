@@ -164,7 +164,7 @@ export function ProductsPage({ onOpenFiles }: { onOpenFiles: () => void }) {
                         {product.assignedFilesCount > 0 ? t('Files: {{count}}', { count: product.assignedFilesCount }) : t('Needs files')}
                       </StatusBadge>
                     </TableCell>
-                    <TableCell className="text-right"><Button type="button" size="sm" variant="ghost" aria-label={t('Manage files for {{name}}', { name: product.name })} onClick={(event) => { event.stopPropagation(); setSelected(product); }}>{t("Manage")}<ArrowUpRight className="size-3.5 text-muted-foreground" aria-hidden="true" /></Button></TableCell>
+                    <TableCell className="text-right"><Button type="button" size="sm" variant="ghost" aria-label={t('Manage files for {{name}}', { name: product.name })} onClick={(event) => { event.stopPropagation(); setSelected(product); }}>{t('manage')}<ArrowUpRight className="size-3.5 text-muted-foreground" aria-hidden="true" /></Button></TableCell>
                   </TableRow>
                 ))}
               </TableBody>

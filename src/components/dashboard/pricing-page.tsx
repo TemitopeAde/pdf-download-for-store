@@ -26,19 +26,19 @@ export function PricingPage() {
   const { t } = useLocale();
   return (
     <div className="space-y-6">
-      <PageHeader title={t('Pricing plans')} description={t('Choose the plan that fits your store. Billing and checkout will be connected later.')} />
+      <PageHeader title={t('pricingPlans')} description={t('pricingDescription')} />
       <div className="grid gap-4 md:grid-cols-3">
         {plans.map((plan) => (
           <Card key={plan.name} className={plan.featured ? 'border-primary shadow-md' : undefined}>
             <CardHeader>
               <div className="flex items-center justify-between gap-3">
-                <CardTitle>{plan.name}</CardTitle>
+                <CardTitle>{t(plan.name)}</CardTitle>
                 {plan.featured ? <Badge>{t('Most popular')}</Badge> : null}
               </div>
               <CardDescription>{t(plan.description)}</CardDescription>
               <p className="pt-3 text-3xl font-semibold">{plan.price === 'Free' ? t('Free') : plan.price}{plan.price !== 'Free' ? <span className="text-sm font-normal text-muted-foreground">{' '}{t('/ month')}</span> : null}</p>
               <div className="pt-4">
-                {plan.name === CURRENT_PLAN ? <Badge variant="secondary">{t('Current plan')}</Badge> : <Button asChild variant={plan.featured ? 'default' : 'outline'} className="w-full"><a href={createUpgradeUrl()} target="_blank" rel="noreferrer">{t('Upgrade to {{name}}', { name: plan.name })}</a></Button>}
+                {plan.name === CURRENT_PLAN ? <Badge variant="secondary">{t('currentPlan')}</Badge> : <Button asChild variant={plan.featured ? 'default' : 'outline'} className="w-full"><a href={createUpgradeUrl()} target="_blank" rel="noreferrer">{t('Upgrade to {{name}}', { name: t(plan.name) })}</a></Button>}
               </div>
             </CardHeader>
           </Card>
@@ -55,7 +55,7 @@ export function PricingPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="min-w-48">{t('Feature')}</TableHead>
-                  {plans.map((plan) => <TableHead key={plan.name} className="min-w-32">{plan.name}</TableHead>)}
+                  {plans.map((plan) => <TableHead key={plan.name} className="min-w-32">{t(plan.name)}</TableHead>)}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -74,7 +74,7 @@ export function PricingPage() {
           </div>
         </CardContent>
       </Card>
-      <p className="flex items-center gap-2 text-xs text-muted-foreground"><CreditCard className="size-3.5" aria-hidden="true" />{t('You are currently on the {{name}} plan. Billing and checkout will be connected later.', { name: CURRENT_PLAN })}</p>
+      <p className="flex items-center gap-2 text-xs text-muted-foreground"><CreditCard className="size-3.5" aria-hidden="true" />{t('You are currently on the {{name}} plan. Billing and checkout will be connected later.', { name: t(CURRENT_PLAN) })}</p>
     </div>
   );
 }

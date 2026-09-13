@@ -32,14 +32,14 @@ export function AnalyticsPage({ onOpenProducts }: { onOpenProducts: () => void }
 
   useEffect(() => { if (plan.allowsAnalytics) void load(); }, [plan.allowsAnalytics]);
 
-  if (!plan.allowsAnalytics) return <div className="space-y-6"><PageHeader title={t('Analytics')} description={t('See which files and products generate downloads.')} /><EmptyState title={t('Analytics is a Pro feature')} description={t('Upgrade to Pro or Business to track downloads and view analytics.')} /></div>;
+  if (!plan.allowsAnalytics) return <div className="space-y-6"><PageHeader title={t('analytics')} description={t('analyticsDescription')} /><EmptyState title={t('analyticsLockedTitle')} description={t('analyticsLockedDescription')} /></div>;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={t('Analytics')}
-        description={t('See which files and products generate downloads.')}
-        actions={<Button type="button" variant="outline" onClick={() => void load()}>{t('Refresh')}</Button>}
+        title={t('analytics')}
+        description={t('analyticsDescription')}
+        actions={<Button type="button" variant="outline" onClick={() => void load()}>{t('refresh')}</Button>}
       />
       {error ? <ErrorBanner message={error} onRetry={() => void load()} /> : null}
       {loading && !data ? (
@@ -51,7 +51,7 @@ export function AnalyticsPage({ onOpenProducts }: { onOpenProducts: () => void }
             <StatCard label={t('Last 7 days')} value={data?.totals.last7Days ?? 0} />
             <StatCard label={t('All time')} value={data?.totals.allTime ?? 0} />
             <StatCard label={t('Files downloaded')} value={data?.totals.uniqueFiles ?? 0} />
-            <StatCard label={t('Products')} value={data?.totals.uniqueProducts ?? 0} />
+            <StatCard label={t('products')} value={data?.totals.uniqueProducts ?? 0} />
           </div>
           {!data || data.totals.allTime === 0 ? (
             <EmptyState

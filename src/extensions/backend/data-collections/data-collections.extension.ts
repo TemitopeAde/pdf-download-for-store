@@ -10,6 +10,8 @@ import downloadEventsCollection from './download-events';
 
 import appSettingsCollection from './app-settings';
 
+import lifecycleEventsCollection from './lifecycle-events';
+
 export default extensions.dataCollections({
   id: 'd994ab5e-0e32-4b39-84b9-e8e11ae5f340',
   name: 'Data Collections',
@@ -18,6 +20,7 @@ export default extensions.dataCollections({
     productFilesCollection,
     assignmentRulesCollection,
     downloadEventsCollection,
-    appSettingsCollection
+    appSettingsCollection,
+    lifecycleEventsCollection
   ],
 });
